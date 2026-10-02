@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sign in to your EchoHand assistive communication workspace.">
+  <title>Sign In — EchoHand</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230B2B26' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0'/><path d='M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2'/><path d='M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8'/><path d='M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15'/></svg>">
+
+  <!-- Core Styles & Auth Styles -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/auth-page.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       CLEAN NAVBAR (MATCHING FOOTER #0B2B26 WITH LIGHT TEXT)
+       ======================================================================== -->
+  <header class="site-header" id="siteHeader">
+    <div class="container nav-container">
+      
+      <!-- Brand Logo -->
+      <a href="index.html" class="brand-logo" aria-label="EchoHand Home">
+        <span class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+            <path
+              d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+          </svg>
+        </span>
+        <span>EchoHand</span>
+      </a>
+
+      <!-- Clean Navigation Links -->
+      <nav aria-label="Main Navigation">
+        <ul class="nav-menu">
+          <li><a href="index.html" class="nav-link">Home</a></li>
+          <li><a href="index.html#how-it-works" class="nav-link">How It Works</a></li>
+          <li><a href="learn.html" class="nav-link">Learn ASL</a></li>
+          <li><a href="index.html#emergency" class="nav-link">Emergency</a></li>
+        </ul>
+      </nav>
+
+      <!-- Nav Actions -->
+      <div class="nav-actions">
+        <a href="login.html#signup" class="btn btn-secondary btn-sm">Create Account</a>
+        <a href="dashboard.html" class="btn btn-primary btn-sm">Try EchoHand</a>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Open Navigation Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="auth-page-section auth-shell">
+    <div class="auth-scene" aria-hidden="true">
+      <span class="scene-line scene-line-one"></span>
+      <span class="scene-line scene-line-two"></span>
+      <span class="scene-glow"></span>
+    </div>
+    <section class="container auth-container auth-container-combined" aria-labelledby="authTitle">
+      <div class="auth-intro">
+        <span class="auth-kicker">Communication, with care</span>
+        <h1 id="authTitle">A little more connected.</h1>
+        <p>Your EchoHand space is ready when you are.</p>
+      </div>
+
+      <div class="auth-card auth-card-combined">
+        <div class="auth-switcher" role="tablist" aria-label="Choose account action" data-active="login">
+          <button class="auth-switch is-active" id="loginTab" type="button" role="tab" aria-selected="true" aria-controls="loginPanel">Log in</button>
+          <button class="auth-switch" id="signupTab" type="button" role="tab" aria-selected="false" aria-controls="signupPanel">Create account</button>
+          <span class="auth-switch-indicator" aria-hidden="true"></span>
+        </div>
+
+        <section class="auth-panel" id="loginPanel" role="tabpanel" aria-labelledby="loginTab">
+          <header class="auth-header auth-header-left">
+            <span class="auth-badge">Member access</span>
+            <h2 class="auth-title">Welcome back</h2>
+            <p class="auth-subtitle">Sign in to continue to your EchoHand workspace.</p>
+          </header>
+          <form class="auth-form" id="loginForm">
+            <div class="form-group">
+              <label for="loginEmail" class="form-label">Email address</label>
+              <input type="email" id="loginEmail" class="form-input" placeholder="name@example.com" required autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label for="loginPassword" class="form-label">Password</label>
+              <div class="input-wrapper">
+                <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+                <button type="button" class="password-toggle-btn" data-password-toggle="loginPassword" aria-label="Show password">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="auth-submit-btn" id="loginSubmitBtn">Log in to EchoHand</button>
+          </form>
+          <p class="auth-panel-footnote">New to EchoHand? <button class="text-switch" type="button" data-switch="signup">Create an account</button></p>
+        </section>
+
+        <section class="auth-panel" id="signupPanel" role="tabpanel" aria-labelledby="signupTab" hidden>
+          <header class="auth-header auth-header-left">
+            <span class="auth-badge">Join EchoHand</span>
+            <h2 class="auth-title">Create your account</h2>
+            <p class="auth-subtitle">Set up your profile and a trusted emergency contact.</p>
+          </header>
+          <form class="auth-form" id="signupForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="signupFullName" class="form-label">Full name</label>
+                <input type="text" id="signupFullName" class="form-input" placeholder="Your name" required autocomplete="name">
+              </div>
+              <div class="form-group">
+                <label for="signupEmail" class="form-label">Email address</label>
+                <input type="email" id="signupEmail" class="form-input" placeholder="name@example.com" required autocomplete="email">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="signupPassword" class="form-label">Password</label>
+                <input type="password" id="signupPassword" class="form-input" placeholder="At least 8 characters" minlength="8" required autocomplete="new-password">
+              </div>
+              <div class="form-group">
+                <label for="signupConfirmPassword" class="form-label">Confirm password</label>
+                <input type="password" id="signupConfirmPassword" class="form-input" placeholder="Enter it again" minlength="8" required autocomplete="new-password">
+              </div>
+            </div>
+            <div class="auth-contact-block">
+              <div class="auth-contact-heading">
+                <span class="contact-mark" aria-hidden="true">+</span>
+                <div><h3>Emergency contact</h3><p>A trusted person EchoHand can reach in an emergency.</p></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="emergencyName" class="form-label">Contact name</label>
+                  <input type="text" id="emergencyName" class="form-input" placeholder="Name" required autocomplete="off">
+                  <span class="field-error"></span>
+                </div>
+                <div class="form-group">
+                  <label for="emergencyPhone" class="form-label">Emergency phone</label>
+                  <input type="tel" id="emergencyPhone" class="form-input" placeholder="+1 555 0100" required autocomplete="tel" inputmode="tel">
+                  <span class="field-error"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="emergencyRelation" class="form-label">Relationship</label>
+                <select id="emergencyRelation" class="form-select">
+                  <option value="Parent / Family">Family member</option>
+                  <option value="Caregiver">Caregiver</option>
+                  <option value="Partner / Spouse">Partner / spouse</option>
+                  <option value="Healthcare Provider">Healthcare provider</option>
+                  <option value="Trusted Friend">Trusted friend</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <!-- Extra contacts injected here by JS -->
+              <button type="button" class="add-contact-btn" id="addContactBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add emergency contact
+              </button>
+            </div>
+            <button type="submit" class="auth-submit-btn" id="signupSubmitBtn">Create my account</button>
+            <p style="font-size:0.78rem;color:#3a5c53;text-align:center;margin-top:0.5rem;">Your data is stored locally on this device for now.</p>
+          </form>
+          <p class="auth-panel-footnote">Already registered? <button class="text-switch" type="button" data-switch="login">Log in</button></p>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================================================
+       COMPACT CALM FOOTER
+       ======================================================================== -->
+  <footer class="site-footer site-footer--slim">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 EchoHand. All rights reserved.</p>
+        <p>Designed for inclusive, accessible communication.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+  <script src="js/auth-page.js"></script>
+</body>
+</html>

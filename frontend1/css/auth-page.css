@@ -1,0 +1,437 @@
+/* ==========================================================================
+   ECHOHAND - Combined Login / Sign-Up Page
+   Background: dark green (#0B2B26)
+   Card: light mint (#DAF1DE / #EAF5EC)
+   Text on card: dark green (#051F20 / #163832)
+   ========================================================================== */
+
+/* ── Page shell ─────────────────────────────────────────────────────────── */
+.auth-shell {
+  background: linear-gradient(
+    160deg,
+    #051F20 0%,
+    #0B2B26 35%,
+    #163832 65%,
+    #0B2B26 100%
+  );
+  min-height: calc(100vh - var(--header-height));
+  padding: 3.5rem 1rem 5rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* Subtle decorative lines in the background */
+.auth-scene {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.scene-line {
+  position: absolute;
+  background: rgba(218, 241, 222, 0.04);
+  border-radius: 2px;
+}
+
+.scene-line-one {
+  width: 1px;
+  height: 100%;
+  left: 30%;
+  top: 0;
+}
+
+.scene-line-two {
+  width: 1px;
+  height: 100%;
+  right: 30%;
+  top: 0;
+}
+
+.scene-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(142, 187, 155, 0.06) 0%, transparent 70%);
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ── Combined container ──────────────────────────────────────────────────── */
+.auth-container-combined {
+  position: relative;
+  z-index: 1;
+  max-width: 980px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1.55fr;
+  gap: 3.5rem;
+  align-items: start;
+  padding: 0;
+}
+
+/* ── Left intro column ───────────────────────────────────────────────────── */
+.auth-intro {
+  padding-top: 1.5rem;
+  color: var(--c-mint-light);
+}
+
+.auth-kicker {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-mint-sage);
+  margin-bottom: 1rem;
+}
+
+.auth-intro h1 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  color: #FFFFFF;
+  margin-bottom: 0.85rem;
+}
+
+.auth-intro p {
+  font-size: 1rem;
+  color: rgba(218, 241, 222, 0.7);
+  line-height: 1.65;
+}
+
+/* ── Card — light mint surface ───────────────────────────────────────────── */
+.auth-card-combined {
+  background-color: #DAF1DE;
+  border: 1px solid rgba(35, 83, 71, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  box-shadow: 0 24px 60px rgba(5, 31, 32, 0.28);
+  color: #051F20;
+  overflow: hidden;
+}
+
+/* ── Tab switcher ────────────────────────────────────────────────────────── */
+.auth-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+  background-color: #c4e6ca;
+  border-bottom: 1px solid rgba(35, 83, 71, 0.12);
+}
+
+.auth-switch {
+  padding: 1rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #3a5c53;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--transition-smooth);
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.auth-switch.is-active {
+  color: #051F20;
+}
+
+.auth-switch-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  height: 2px;
+  background-color: #235347;
+  border-radius: 2px 2px 0 0;
+  transition: transform var(--transition-smooth);
+}
+
+.auth-switcher[data-active="signup"] .auth-switch-indicator {
+  transform: translateX(100%);
+}
+
+/* ── Panels ──────────────────────────────────────────────────────────────── */
+.auth-panel {
+  padding: 2rem 2.25rem 2.25rem;
+}
+
+.auth-panel[hidden] {
+  display: none;
+}
+
+/* ── Panel header (left-aligned on mint card) ────────────────────────────── */
+.auth-header-left {
+  text-align: left;
+  margin-bottom: 1.75rem;
+}
+
+.auth-header-left .auth-badge {
+  background: rgba(35, 83, 71, 0.1);
+  color: #235347;
+}
+
+.auth-header-left .auth-title {
+  font-size: 1.6rem;
+  color: #051F20;
+  margin-top: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.auth-header-left .auth-subtitle {
+  color: #3a5c53;
+  font-size: 0.9rem;
+}
+
+/* ── Form controls — dark-on-light override ──────────────────────────────── */
+.auth-card-combined .form-label {
+  color: #163832;
+}
+
+.auth-card-combined .form-input,
+.auth-card-combined .form-select {
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(35, 83, 71, 0.22);
+  color: #051F20;
+}
+
+.auth-card-combined .form-input::placeholder {
+  color: rgba(5, 31, 32, 0.38);
+}
+
+.auth-card-combined .form-input:focus,
+.auth-card-combined .form-select:focus {
+  background-color: #FFFFFF;
+  border-color: #235347;
+  box-shadow: 0 0 0 3px rgba(35, 83, 71, 0.12);
+}
+
+.auth-card-combined .form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23235347' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+.auth-card-combined .form-select option {
+  background-color: #DAF1DE;
+  color: #051F20;
+}
+
+/* ── Password toggle on mint card ────────────────────────────────────────── */
+.auth-card-combined .password-toggle-btn {
+  color: rgba(5, 31, 32, 0.45);
+}
+
+.auth-card-combined .password-toggle-btn:hover {
+  color: #051F20;
+}
+
+/* ── Submit button on mint card ──────────────────────────────────────────── */
+.auth-card-combined .auth-submit-btn {
+  background-color: #0B2B26;
+  color: #DAF1DE;
+  border-color: #0B2B26;
+}
+
+.auth-card-combined .auth-submit-btn:hover {
+  background-color: #051F20;
+  color: #FFFFFF;
+  border-color: #051F20;
+}
+
+/* ── Panel footnote (switch link) ────────────────────────────────────────── */
+.auth-panel-footnote {
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+  color: #3a5c53;
+  text-align: center;
+}
+
+.text-switch {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  color: #0B2B26;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 0;
+  margin-left: 0.25rem;
+  transition: color var(--transition-smooth);
+}
+
+.text-switch:hover {
+  color: #051F20;
+}
+
+/* ── Emergency contact block ─────────────────────────────────────────────── */
+.auth-contact-block {
+  background: rgba(35, 83, 71, 0.07);
+  border: 1px solid rgba(35, 83, 71, 0.15);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-contact-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.contact-mark {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 50%;
+  background: #235347;
+  color: #DAF1DE;
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.auth-contact-heading h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #051F20;
+  margin-bottom: 0.2rem;
+}
+
+.auth-contact-heading p {
+  font-size: 0.82rem;
+  color: #3a5c53;
+  line-height: 1.5;
+}
+
+/* ── Additional contacts (dynamically added) ─────────────────────────────── */
+.extra-contact-item {
+  border-top: 1px solid rgba(35, 83, 71, 0.12);
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.extra-contact-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.extra-contact-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #235347;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.remove-contact-btn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #C85A48;
+  background: none;
+  border: 1px solid rgba(200, 90, 72, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.65rem;
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+  font-family: inherit;
+}
+
+.remove-contact-btn:hover {
+  background: rgba(200, 90, 72, 0.08);
+  border-color: #C85A48;
+}
+
+/* ── Add contact button ──────────────────────────────────────────────────── */
+.add-contact-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #235347;
+  background: none;
+  border: 1px dashed rgba(35, 83, 71, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+  font-family: inherit;
+  align-self: flex-start;
+}
+
+.add-contact-btn:hover {
+  background: rgba(35, 83, 71, 0.08);
+  border-color: #235347;
+  color: #0B2B26;
+}
+
+.add-contact-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Inline field error messages ─────────────────────────────────────────── */
+.field-error {
+  font-size: 0.8rem;
+  color: #C85A48;
+  margin-top: 0.2rem;
+  display: none;
+}
+
+.field-error.visible {
+  display: block;
+}
+
+.form-input.has-error,
+.form-select.has-error {
+  border-color: #C85A48;
+  box-shadow: 0 0 0 3px rgba(200, 90, 72, 0.1);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .auth-container-combined {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+    gap: 2rem;
+  }
+
+  .auth-intro {
+    padding-top: 0;
+    text-align: center;
+  }
+
+  .auth-intro h1 {
+    font-size: 1.9rem;
+  }
+}
+
+@media (max-width: 540px) {
+  .auth-panel {
+    padding: 1.5rem 1.25rem 1.75rem;
+  }
+
+  .auth-card-combined .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-intro h1 {
+    font-size: 1.65rem;
+  }
+}

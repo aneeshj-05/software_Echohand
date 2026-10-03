@@ -21,35 +21,95 @@ function initTabSwitcher() {
 
   if (!loginTab || !signupTab) return;
 
-  function activateTab(tab) {
+  function activateTab(tab, updateHash = true) {
     const isLogin = tab === 'login';
 
     loginTab.classList.toggle('is-active', isLogin);
     signupTab.classList.toggle('is-active', !isLogin);
-    loginTab.setAttribute('aria-selected', isLogin);
-    signupTab.setAttribute('aria-selected', !isLogin);
+    loginTab.setAttribute('aria-selected', isLogin ? 'true' : 'false');
+    signupTab.setAttribute('aria-selected', !isLogin ? 'true' : 'false');
 
-    if (loginPanel)  loginPanel.hidden  = !isLogin;
-    if (signupPanel) signupPanel.hidden = isLogin;
+    if (loginPanel) {
+      loginPanel.hidden = !isLogin;
+      if (isLogin) {
+        loginPanel.removeAttribute('hidden');
+      } else {
+        loginPanel.setAttribute('hidden', '');
+      }
+    }
+    if (signupPanel) {
+      signupPanel.hidden = isLogin;
+      if (!isLogin) {
+        signupPanel.removeAttribute('hidden');
+      } else {
+        signupPanel.setAttribute('hidden', '');
+      }
+    }
 
     if (switcher) switcher.setAttribute('data-active', isLogin ? 'login' : 'signup');
+
+    if (updateHash) {
+      const targetHash = isLogin ? '#login' : '#signup';
+      if (window.location.hash !== targetHash) {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', targetHash);
+        } else {
+          window.location.hash = targetHash;
+        }
+      }
+    }
   }
 
+  // 1. Tab switches
   loginTab.addEventListener('click',  () => activateTab('login'));
   signupTab.addEventListener('click', () => activateTab('signup'));
 
-  // Text-link switches inside panels
+  // 2. Text-link switches inside panels (e.g. bottom "Create an account" & "Log in")
   document.querySelectorAll('.text-switch').forEach(btn => {
-    btn.addEventListener('click', () => activateTab(btn.dataset.switch));
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      activateTab(btn.dataset.switch);
+    });
   });
+
+  // 3. Top navigation button and any anchor links pointing to #signup or #login
+  document.querySelectorAll('a[href*="#signup"], a[href$="#signup"], #navCreateAccountBtn').forEach(link => {
+    link.addEventListener('click', (e) => {
+      // If staying on this page
+      e.preventDefault();
+      activateTab('signup');
+    });
+  });
+
+  document.querySelectorAll('a[href*="#login"], a[href$="#login"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      activateTab('login');
+    });
+  });
+
+  // Expose on window for direct access if needed
+  window.EchoHandAuthTabs = { activateTab };
 }
 
 /* ── Hash routing: login.html#signup opens signup tab directly ────────────── */
 function initHashRouting() {
-  if (window.location.hash === '#signup') {
-    const signupTab = document.getElementById('signupTab');
-    if (signupTab) signupTab.click();
+  function handleHash() {
+    const hash = window.location.hash;
+    if (hash === '#signup') {
+      const signupTab = document.getElementById('signupTab');
+      if (signupTab) signupTab.click();
+    } else if (hash === '#login') {
+      const loginTab = document.getElementById('loginTab');
+      if (loginTab) loginTab.click();
+    }
   }
+
+  // Check on initial load
+  handleHash();
+
+  // Listen to hash change events (e.g. browser back/forward or external anchor clicks)
+  window.addEventListener('hashchange', handleHash);
 }
 
 /* ── Password Toggles ─────────────────────────────────────────────────────── */
@@ -68,12 +128,17 @@ function initPasswordToggles() {
   });
 }
 
+/* ── Backend API Configuration ────────────────────────────────────────────── */
+const API_BASE = (window.location.protocol === 'file:' || (window.location.port && !window.location.port.includes('5000')))
+  ? 'http://127.0.0.1:5000'
+  : '';
+
 /* ── Login Form ───────────────────────────────────────────────────────────── */
 function initLoginForm() {
   const form = document.getElementById('loginForm');
   if (!form) return;
 
-  form.addEventListener('submit', e => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     clearErrors(form);
 
@@ -91,19 +156,59 @@ function initLoginForm() {
     }
     if (!valid) return;
 
-    // Check stored user
-    let storedUser = null;
-    try { storedUser = JSON.parse(localStorage.getItem('echohand_user')); } catch (_) {}
-    const userName = storedUser?.name || 'there';
-
-    localStorage.setItem('echohand_logged_in', 'true');
-    if (!storedUser) ensureDefaultUserData();
-
     const btn = document.getElementById('loginSubmitBtn');
+    const originalBtnText = btn ? btn.textContent : 'Log in to EchoHand';
     if (btn) { btn.textContent = 'Signing in…'; btn.disabled = true; }
 
-    EchoHand.showToast(`Welcome back, ${userName}! Loading your workspace…`, 'mint', 2500);
-    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.value.trim(),
+          password: password.value
+        })
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok && data.success) {
+        const user = data.user || {};
+        const userName = user.name || 'there';
+
+        if (data.token) {
+          localStorage.setItem('echohand_token', data.token);
+        }
+        localStorage.setItem('echohand_user', JSON.stringify(user));
+        localStorage.setItem('echoHandUser', JSON.stringify(user));
+        localStorage.setItem('echohand_logged_in', 'true');
+        localStorage.setItem('echoHandLoggedIn', 'true');
+        if (user.emergencyContacts) {
+          localStorage.setItem('echohand_contacts', JSON.stringify(user.emergencyContacts));
+        }
+
+        EchoHand.showToast(data.message || `Welcome back, ${userName}! Loading your workspace…`, 'mint', 2500);
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+      } else {
+        if (btn) { btn.textContent = originalBtnText; btn.disabled = false; }
+        const errMsg = data.message || 'Invalid email or password.';
+        showFieldError(password, errMsg);
+        EchoHand.showToast(errMsg, 'crimson', 3500);
+      }
+    } catch (err) {
+      console.warn('API connection failed, falling back to local session:', err);
+      // Fallback for offline local dev mode if server is not reachable
+      let storedUser = null;
+      try { storedUser = JSON.parse(localStorage.getItem('echohand_user')); } catch (_) {}
+      const userName = storedUser?.name || 'there';
+
+      localStorage.setItem('echohand_logged_in', 'true');
+      localStorage.setItem('echoHandLoggedIn', 'true');
+      if (!storedUser) ensureDefaultUserData();
+
+      EchoHand.showToast(`Connected locally (offline mode). Welcome back, ${userName}!`, 'mint', 2500);
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+    }
   });
 }
 
@@ -183,7 +288,7 @@ function renumberExtraContacts() {
 }
 
 /* ── Signup Submit ────────────────────────────────────────────────────────── */
-function handleSignupSubmit(e) {
+async function handleSignupSubmit(e) {
   e.preventDefault();
   const form = e.target;
   clearErrors(form);
@@ -243,13 +348,17 @@ function handleSignupSubmit(e) {
 
   if (!valid) return;
 
+  // Read user phone (from #signupPhone)
+  const phoneInput = form.querySelector('#signupPhone');
+  const userPhone = phoneInput ? phoneInput.value.trim() : '';
+
   // Build contacts array
   const emergencyContacts = [
     {
       id: 1,
       name: emergencyName.value.trim(),
       phone: emergencyPhone.value.trim(),
-      relation: form.querySelector('#emergencyRelation')?.value || 'Family Member',
+      relation: form.querySelector('#emergencyRelation')?.value || 'Parent / Family',
       isPrimary: true
     }
   ];
@@ -264,23 +373,75 @@ function handleSignupSubmit(e) {
     });
   });
 
-  const userProfile = {
-    name: fullName.value.trim(),
+  const btn = document.getElementById('signupSubmitBtn');
+  const originalBtnText = btn ? btn.textContent : 'Create my account';
+  if (btn) { btn.textContent = 'Creating account…'; btn.disabled = true; }
+
+  const signupPayload = {
+    fullName: fullName.value.trim(),
     email: email.value.trim(),
-    registeredAt: new Date().toISOString()
+    phone: userPhone,
+    password: password.value,
+    confirmPassword: confirmPassword.value,
+    emergencyContacts: emergencyContacts
   };
 
   try {
-    localStorage.setItem('echohand_user', JSON.stringify(userProfile));
-    localStorage.setItem('echohand_contacts', JSON.stringify(emergencyContacts));
-    localStorage.setItem('echohand_logged_in', 'true');
-  } catch (_) {}
+    const response = await fetch(`${API_BASE}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(signupPayload)
+    });
 
-  const btn = document.getElementById('signupSubmitBtn');
-  if (btn) { btn.textContent = 'Account created! Loading…'; btn.disabled = true; }
+    const data = await response.json().catch(() => ({}));
 
-  EchoHand.showToast(`Welcome to EchoHand, ${userProfile.name}! Setting up your workspace…`, 'mint', 2500);
-  setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+    if (response.ok && data.success) {
+      const user = data.user || {};
+      if (data.token) {
+        localStorage.setItem('echohand_token', data.token);
+      }
+      localStorage.setItem('echohand_user', JSON.stringify(user));
+      localStorage.setItem('echoHandUser', JSON.stringify(user));
+      localStorage.setItem('echohand_contacts', JSON.stringify(user.emergencyContacts || emergencyContacts));
+      localStorage.setItem('echohand_logged_in', 'true');
+      localStorage.setItem('echoHandLoggedIn', 'true');
+
+      if (btn) { btn.textContent = 'Account created! Loading…'; }
+      EchoHand.showToast(data.message || `Welcome to EchoHand, ${user.name}! Setting up your workspace…`, 'mint', 2500);
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+    } else {
+      if (btn) { btn.textContent = originalBtnText; btn.disabled = false; }
+      if (data.errors) {
+        if (data.errors.email) showFieldError(email, data.errors.email);
+        if (data.errors.password) showFieldError(password, data.errors.password);
+        if (data.errors.confirmPassword) showFieldError(confirmPassword, data.errors.confirmPassword);
+        if (data.errors.fullName) showFieldError(fullName, data.errors.fullName);
+      }
+      const errMsg = data.message || 'Registration failed. Please check form inputs.';
+      EchoHand.showToast(errMsg, 'crimson', 3500);
+    }
+  } catch (err) {
+    console.warn('API registration failed, storing profile locally (offline mode):', err);
+    // Offline local fallback
+    const userProfile = {
+      name: fullName.value.trim(),
+      email: email.value.trim(),
+      phone: userPhone,
+      registeredAt: new Date().toISOString()
+    };
+
+    try {
+      localStorage.setItem('echohand_user', JSON.stringify(userProfile));
+      localStorage.setItem('echoHandUser', JSON.stringify(userProfile));
+      localStorage.setItem('echohand_contacts', JSON.stringify(emergencyContacts));
+      localStorage.setItem('echohand_logged_in', 'true');
+      localStorage.setItem('echoHandLoggedIn', 'true');
+    } catch (_) {}
+
+    if (btn) { btn.textContent = 'Account created! Loading…'; }
+    EchoHand.showToast(`Account saved locally (offline mode). Welcome, ${userProfile.name}!`, 'mint', 2500);
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+  }
 }
 
 /* ── Validation helpers ───────────────────────────────────────────────────── */

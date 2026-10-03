@@ -45,6 +45,11 @@ function initPasswordToggles() {
   }
 }
 
+/* ── Backend API Configuration ────────────────────────────────────────────── */
+const API_BASE = (window.location.protocol === 'file:' || (window.location.port && !window.location.port.includes('5000')))
+  ? 'http://127.0.0.1:5000'
+  : '';
+
 /**
  * Handle Login Form
  */
@@ -52,7 +57,7 @@ function initLoginForm() {
   const loginForm = document.getElementById('loginForm');
   if (!loginForm) return;
 
-  loginForm.addEventListener('submit', (e) => {
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const email = document.getElementById('loginEmail')?.value.trim();
@@ -63,34 +68,58 @@ function initLoginForm() {
       return;
     }
 
-    // Check if user was registered in localStorage, else default to Amrutha
-    let storedUser = null;
-    try {
-      storedUser = JSON.parse(localStorage.getItem('echohand_user'));
-    } catch (err) {
-      storedUser = null;
-    }
-
-    const userName = storedUser && storedUser.name ? storedUser.name : 'Amrutha';
-
-    // Set active session in localStorage
-    localStorage.setItem('echohand_logged_in', 'true');
-    if (!storedUser) {
-      ensureDefaultUserData();
-    }
-
     const submitBtn = document.getElementById('loginSubmitBtn');
+    const originalText = submitBtn ? submitBtn.textContent : 'Log in';
     if (submitBtn) {
       submitBtn.textContent = 'Signing in...';
       submitBtn.style.opacity = '0.7';
       submitBtn.disabled = true;
     }
 
-    EchoHand.showToast(`Welcome back, ${userName}! Loading your workspace...`, 'mint', 2500);
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
 
-    setTimeout(() => {
-      window.location.href = 'dashboard.html';
-    }, 1200);
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok && data.success) {
+        const user = data.user || {};
+        if (data.token) localStorage.setItem('echohand_token', data.token);
+        localStorage.setItem('echohand_user', JSON.stringify(user));
+        localStorage.setItem('echoHandUser', JSON.stringify(user));
+        localStorage.setItem('echohand_logged_in', 'true');
+        localStorage.setItem('echoHandLoggedIn', 'true');
+        if (user.emergencyContacts) {
+          localStorage.setItem('echohand_contacts', JSON.stringify(user.emergencyContacts));
+        }
+
+        EchoHand.showToast(data.message || `Welcome back, ${user.name || 'there'}! Loading workspace...`, 'mint', 2500);
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+      } else {
+        if (submitBtn) {
+          submitBtn.textContent = originalText;
+          submitBtn.style.opacity = '1';
+          submitBtn.disabled = false;
+        }
+        EchoHand.showToast(data.message || 'Invalid email or password.', 'crimson', 3500);
+      }
+    } catch (err) {
+      console.warn('API login failed, checking fallback:', err);
+      // Fallback
+      let storedUser = null;
+      try { storedUser = JSON.parse(localStorage.getItem('echohand_user')); } catch (_) {}
+      const userName = storedUser && storedUser.name ? storedUser.name : 'Amrutha';
+
+      localStorage.setItem('echohand_logged_in', 'true');
+      localStorage.setItem('echoHandLoggedIn', 'true');
+      if (!storedUser) ensureDefaultUserData();
+
+      EchoHand.showToast(`Connected locally (offline mode). Welcome back, ${userName}!`, 'mint', 2500);
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+    }
   });
 }
 
@@ -126,7 +155,7 @@ function initSignupForm() {
   const signupForm = document.getElementById('signupForm');
   if (!signupForm) return;
 
-  signupForm.addEventListener('submit', (e) => {
+  signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const fullName = document.getElementById('signupFullName')?.value.trim();
@@ -172,13 +201,13 @@ function initSignupForm() {
       return;
     }
 
-    // Save to localStorage
-    const userProfile = {
-      name: fullName,
-      email: email,
-      preferredInput: preferredInput,
-      registeredAt: new Date().toISOString()
-    };
+    const submitBtn = document.getElementById('signupSubmitBtn');
+    const originalText = submitBtn ? submitBtn.textContent : 'Create Account';
+    if (submitBtn) {
+      submitBtn.textContent = 'Account Creating...';
+      submitBtn.style.opacity = '0.85';
+      submitBtn.disabled = true;
+    }
 
     const emergencyContacts = [
       {
@@ -191,25 +220,61 @@ function initSignupForm() {
     ];
 
     try {
-      localStorage.setItem('echohand_user', JSON.stringify(userProfile));
-      localStorage.setItem('echohand_contacts', JSON.stringify(emergencyContacts));
-      localStorage.setItem('echohand_logged_in', 'true');
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName,
+          email,
+          password,
+          confirmPassword,
+          preferredInput,
+          emergencyContacts
+        })
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok && data.success) {
+        const user = data.user || {};
+        if (data.token) localStorage.setItem('echohand_token', data.token);
+        localStorage.setItem('echohand_user', JSON.stringify(user));
+        localStorage.setItem('echoHandUser', JSON.stringify(user));
+        localStorage.setItem('echohand_contacts', JSON.stringify(user.emergencyContacts || emergencyContacts));
+        localStorage.setItem('echohand_logged_in', 'true');
+        localStorage.setItem('echoHandLoggedIn', 'true');
+
+        EchoHand.showToast(data.message || `Account successfully created for ${fullName}! Launching EchoHand...`, 'mint', 2500);
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+      } else {
+        if (submitBtn) {
+          submitBtn.textContent = originalText;
+          submitBtn.style.opacity = '1';
+          submitBtn.disabled = false;
+        }
+        EchoHand.showToast(data.message || 'Registration failed. Please check your inputs.', 'crimson', 3500);
+      }
     } catch (err) {
-      console.warn('Could not save to localStorage:', err);
+      console.warn('Backend API registration failed, storing profile locally:', err);
+      // Fallback
+      const userProfile = {
+        name: fullName,
+        email: email,
+        preferredInput: preferredInput,
+        registeredAt: new Date().toISOString()
+      };
+
+      try {
+        localStorage.setItem('echohand_user', JSON.stringify(userProfile));
+        localStorage.setItem('echoHandUser', JSON.stringify(userProfile));
+        localStorage.setItem('echohand_contacts', JSON.stringify(emergencyContacts));
+        localStorage.setItem('echohand_logged_in', 'true');
+        localStorage.setItem('echoHandLoggedIn', 'true');
+      } catch (e) {}
+
+      EchoHand.showToast(`Account saved locally (offline mode). Welcome, ${fullName}!`, 'mint', 2500);
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
     }
-
-    const submitBtn = document.getElementById('signupSubmitBtn');
-    if (submitBtn) {
-      submitBtn.textContent = 'Account Created! Loading Workspace...';
-      submitBtn.style.opacity = '0.85';
-      submitBtn.disabled = true;
-    }
-
-    EchoHand.showToast(`Account successfully created for ${fullName}! Launching EchoHand...`, 'mint', 2500);
-
-    setTimeout(() => {
-      window.location.href = 'dashboard.html';
-    }, 1200);
   });
 }
 

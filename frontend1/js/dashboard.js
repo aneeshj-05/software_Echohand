@@ -1,381 +1,144 @@
 /* =========================================================
    ECHOHAND DASHBOARD CONTROLLER
-========================================================= */
+   ========================================================= */
 
 (function () {
+  'use strict';
 
-    "use strict";
+  const $ = id => document.getElementById(id);
 
+  /* ── User greeting ──────────────────────────────────────── */
+  function loadUserName() {
+    const greetingEl = $('dbGreeting');
+    const nameEl     = $('dbUserName');
 
-    /* =======================================================
-       HELPERS
-    ======================================================= */
+    let name = 'there';
+    try {
+      const saved = JSON.parse(localStorage.getItem('echohand_user'));
+      if (saved?.name) name = saved.name.split(' ')[0];
+    } catch (_) {}
 
-    const $ = (id) => document.getElementById(id);
+    const hour = new Date().getHours();
+    const tod  = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
+    if (greetingEl) greetingEl.textContent = `${tod}, ${name}`;
+    if (nameEl)     nameEl.textContent = name;
+  }
 
-    /* =======================================================
-       MODAL CONTROL
-    ======================================================= */
+  /* ── Modal system ───────────────────────────────────────── */
+  function openModal(id) {
+    // Close any other open modal first (one at a time)
+    document.querySelectorAll('.eh-modal.is-open').forEach(m => {
+      if (m.id !== id) _closeOne(m.id);
+    });
 
-    function openModal(id) {
+    const modal = $(id);
+    if (!modal) return;
 
-        const modal = $(id);
+    modal.classList.add('is-open');
+    modal.removeAttribute('hidden');
+    modal.setAttribute('aria-hidden', 'false');
 
-        if (!modal) return;
+    $('modalBackdrop')?.classList.add('is-open');
 
-        modal.classList.add("is-open");
-        modal.setAttribute("aria-hidden", "false");
+    // Lock page scroll while modal is open
+    document.body.style.overflow = 'hidden';
+  }
 
-        document.body.classList.add("modal-open");
+  function _closeOne(id) {
+    const modal = $(id);
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function closeModal(id) {
+    _closeOne(id);
+
+    // Stop camera stream when camera modal closes
+    if (id === 'cameraModal') {
+      window.EchoHandCamera?.stopCamera?.();
     }
 
-
-    function closeModal(id) {
-
-        const modal = $(id);
-
-        if (!modal) return;
-
-        modal.classList.remove("is-open");
-        modal.setAttribute("aria-hidden", "true");
-
-        const anyOpenModal =
-            document.querySelector(".modal-overlay.is-open");
-
-        if (!anyOpenModal) {
-            document.body.classList.remove("modal-open");
-        }
-
+    // Restore scroll only when no modal remains open
+    const anyOpen = document.querySelector('.eh-modal.is-open');
+    if (!anyOpen) {
+      $('modalBackdrop')?.classList.remove('is-open');
+      document.body.style.overflow = '';
     }
-
-
-    /* =======================================================
-       TOAST
-    ======================================================= */
-
-    let toastTimer = null;
-
-    function showToast(message) {
-
-        const toast = $("dashboardToast");
-        const text = $("toastMessage");
-
-        if (!toast || !text) return;
-
-        text.textContent = message;
-
-        toast.classList.add("show");
-
-        clearTimeout(toastTimer);
-
-        toastTimer = setTimeout(() => {
-            toast.classList.remove("show");
-        }, 3000);
-
-    }
-
-
-    /* =======================================================
-       USER NAME
-    ======================================================= */
-
-    function loadUserName() {
-
-        const userNameElement = $("userName");
-
-        if (!userNameElement) return;
-
-        try {
-
-            const savedUser =
-                JSON.parse(localStorage.getItem("echoHandUser"));
-
-            if (savedUser && savedUser.name) {
-
-                userNameElement.textContent =
-                    savedUser.name.split(" ")[0];
-
-                return;
-            }
-
-        } catch (error) {
-
-            console.warn(
-                "Could not read saved user:",
-                error
-            );
-
-        }
-
-    }
-
-
-    /* =======================================================
-       ASL HORIZONTAL SCROLL
-    ======================================================= */
-
-    function setupASLScroll() {
-
-        const container =
-            $("aslCardContainer");
-
-        const leftButton =
-            $("aslScrollLeft");
-
-        const rightButton =
-            $("aslScrollRight");
-
-
-        if (!container) return;
-
-
-        leftButton?.addEventListener(
-            "click",
-            () => {
-
-                container.scrollBy({
-                    left: -430,
-                    behavior: "smooth"
-                });
-
-            }
-        );
-
-
-        rightButton?.addEventListener(
-            "click",
-            () => {
-
-                container.scrollBy({
-                    left: 430,
-                    behavior: "smooth"
-                });
-
-            }
-        );
-
-    }
-
-
-    /* =======================================================
-       OPEN CAMERA
-    ======================================================= */
-
-    function setupCameraButton() {
-
-        const button =
-            $("openCameraBtn");
-
-        if (!button) return;
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                /*
-                 * IMPORTANT:
-                 * Open the modal regardless of whether a
-                 * camera exists.
-                 */
-
-                openModal("cameraModal");
-
-                if (
-                    window.EchoHandCamera &&
-                    typeof window.EchoHandCamera.initialize === "function"
-                ) {
-
-                    window.EchoHandCamera.initialize();
-
-                }
-
-            }
-        );
-
-    }
-
-
-    /* =======================================================
-       OPEN GLOVE
-    ======================================================= */
-
-    function setupGloveButton() {
-
-        const button =
-            $("openGloveBtn");
-
-        if (!button) return;
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                /*
-                 * IMPORTANT:
-                 * The glove modal opens even when the ESP32
-                 * is not connected.
-                 */
-
-                openModal("gloveModal");
-
-                if (
-                    window.EchoHandGlove &&
-                    typeof window.EchoHandGlove.initialize === "function"
-                ) {
-
-                    window.EchoHandGlove.initialize();
-
-                }
-
-            }
-        );
-
-    }
-
-
-    /* =======================================================
-       CLOSE MODALS
-    ======================================================= */
-
-    function setupModalClosing() {
-
-        document
-            .querySelectorAll("[data-close-modal]")
-            .forEach(button => {
-
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        const modalId =
-                            button.dataset.closeModal;
-
-                        closeModal(modalId);
-
-                    }
-                );
-
-            });
-
-
-        document
-            .querySelectorAll(".modal-overlay")
-            .forEach(modal => {
-
-                modal.addEventListener(
-                    "click",
-                    (event) => {
-
-                        if (
-                            event.target === modal
-                        ) {
-
-                            closeModal(modal.id);
-
-                        }
-
-                    }
-                );
-
-            });
-
-
-        document.addEventListener(
-            "keydown",
-            (event) => {
-
-                if (event.key !== "Escape") {
-                    return;
-                }
-
-                document
-                    .querySelectorAll(
-                        ".modal-overlay.is-open"
-                    )
-                    .forEach(modal => {
-
-                        closeModal(modal.id);
-
-                    });
-
-            }
-        );
-
-    }
-
-
-    /* =======================================================
-       LOGOUT
-    ======================================================= */
-
-    function setupLogout() {
-
-        const button =
-            $("logoutBtn");
-
-        if (!button) return;
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                /*
-                 * Keep this simple until your real
-                 * authentication backend is connected.
-                 */
-
-                localStorage.removeItem(
-                    "echoHandLoggedIn"
-                );
-
-                localStorage.removeItem(
-                    "echoHandUser"
-                );
-
-                window.location.href =
-                    "login.html";
-
-            }
-        );
-
-    }
-
-
-    /* =======================================================
-       GLOBAL API
-    ======================================================= */
-
-    window.EchoHandDashboard = {
-
-        openModal,
-        closeModal,
-        showToast
-
+  }
+
+  /* ── Wire close buttons ─────────────────────────────────── */
+  function setupModalClosing() {
+    // Map each close button id → its modal id
+    const map = {
+      closeCameraModal:    'cameraModal',
+      closeGloveModal:     'gloveModal',
+      closeAslModal:       'aslModal',
+      closeEmergencyModal: 'emergencyModal'
     };
 
+    Object.entries(map).forEach(([btnId, modalId]) => {
+      $(btnId)?.addEventListener('click', () => closeModal(modalId));
+    });
 
-    /* =======================================================
-       INITIALIZE
-    ======================================================= */
+    // Backdrop click
+    $('modalBackdrop')?.addEventListener('click', () => {
+      document.querySelectorAll('.eh-modal.is-open')
+        .forEach(m => closeModal(m.id));
+    });
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        () => {
+    // Escape key
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      document.querySelectorAll('.eh-modal.is-open')
+        .forEach(m => closeModal(m.id));
+    });
+  }
 
-            loadUserName();
+  /* ── Feature card buttons ───────────────────────────────── */
+  function setupCardButtons() {
+    $('openCameraBtn')?.addEventListener('click', () => {
+      openModal('cameraModal');
+      window.EchoHandCamera?.initialize?.();
+    });
 
-            setupASLScroll();
+    $('openGloveBtn')?.addEventListener('click', () => {
+      openModal('gloveModal');
+      window.EchoHandGlove?.initialize?.();
+    });
+  }
 
-            setupCameraButton();
+  /* ── Sign out ───────────────────────────────────────────── */
+  function setupLogout() {
+    $('dbLogoutBtn')?.addEventListener('click', () => {
+      localStorage.removeItem('echohand_logged_in');
+      localStorage.removeItem('echohand_user');
+      window.location.href = 'index.html';
+    });
+  }
 
-            setupGloveButton();
+  /* ── Guest banner ───────────────────────────────────────── */
+  function setupGuestBanner() {
+    const isLoggedIn = localStorage.getItem('echohand_logged_in') === 'true';
+    const banner = $('guestBanner');
+    if (!isLoggedIn && banner) banner.hidden = false;
 
-            setupModalClosing();
+    $('dismissGuestBanner')?.addEventListener('click', () => {
+      if (banner) banner.hidden = true;
+    });
+  }
 
-            setupLogout();
+  /* ── Public API ─────────────────────────────────────────── */
+  window.EchoHandDashboard = { openModal, closeModal };
 
-        }
-    );
+  /* ── Init ───────────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', () => {
+    loadUserName();
+    setupGuestBanner();
+    setupCardButtons();
+    setupModalClosing();
+    setupLogout();
+  });
 
 })();

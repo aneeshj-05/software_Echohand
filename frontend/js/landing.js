@@ -5,8 +5,70 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initHeroSpeech();
+  initGestureTabs();
   initEmergencyFlow();
 });
+
+/**
+ * Gesture tab switcher on hero card
+ */
+function initGestureTabs() {
+  const tabs    = document.querySelectorAll('.gesture-tab');
+  const wordEl  = document.getElementById('heroGestureWord');
+  const confEl  = document.getElementById('heroGestureConf');
+  const toggle  = document.getElementById('cardViewToggle');
+  const viewG   = document.getElementById('viewGesture');
+  const viewS   = document.getElementById('viewSensor');
+  if (!tabs.length || !wordEl || !confEl) return;
+
+  const FINGER_DATA = {
+    YES:   [90, 85, 82, 18, 12],
+    NO:    [75, 92, 88, 15, 10],
+    DRINK: [88, 20, 18, 15, 82],
+    DEAF:  [30, 91, 15, 12, 10],
+    NOW:   [85, 80, 78, 75, 88],
+  };
+
+  const bars = ['Thumb','Index','Middle','Ring','Little'].map(f => ({
+    bar: document.getElementById('fbar' + f),
+    val: document.getElementById('fval' + f),
+  }));
+
+  function updateChart(word) {
+    const vals = FINGER_DATA[word] || [50,50,50,50,50];
+    bars.forEach(({ bar, val }, i) => {
+      if (!bar || !val) return;
+      bar.style.width = vals[i] + '%';
+      bar.style.animation = 'none';
+      void bar.offsetWidth;
+      bar.style.animation = '';
+      val.textContent = vals[i] + '%';
+    });
+  }
+
+  // Toggle between gesture view and sensor view
+  let showingSensor = false;
+  if (toggle && viewG && viewS) {
+    toggle.addEventListener('click', () => {
+      showingSensor = !showingSensor;
+      viewG.classList.toggle('is-active', !showingSensor);
+      viewS.classList.toggle('is-active', showingSensor);
+      toggle.textContent = showingSensor ? 'Gesture' : 'Sensor Data';
+      toggle.classList.toggle('is-sensor', showingSensor);
+      if (showingSensor) updateChart(wordEl.textContent);
+    });
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      wordEl.textContent = tab.dataset.word;
+      confEl.textContent = tab.dataset.conf + '% confidence';
+      if (showingSensor) updateChart(tab.dataset.word);
+    });
+  });
+}
 
 /**
  * Hero Sample Speech Trigger
@@ -16,11 +78,10 @@ function initHeroSpeech() {
   if (!listenBtn) return;
 
   listenBtn.addEventListener('click', () => {
+    const word = document.getElementById('heroGestureWord')?.textContent || 'YES';
     listenBtn.style.opacity = '0.7';
-    EchoHand.speakText('Hello! Welcome to EchoHand.', null, () => {
-      listenBtn.style.opacity = '1';
-    });
-    EchoHand.showToast('Speaking gesture: "Hello"', 'mint', 1800);
+    EchoHand.speakText(word, null, () => { listenBtn.style.opacity = '1'; });
+    EchoHand.showToast(`Speaking: "${word}"`, 'mint', 1800);
   });
 }
 

@@ -101,48 +101,70 @@
           </div>
         </div>
 
-        <!-- Right Side: ONE Beautiful Minimal Visual Representation -->
+        <!-- Right Side: Cycling gesture card -->
         <div class="hero-visual-wrapper">
           <div class="minimal-gesture-card">
 
-            <!-- Minimal Hand Graphic -->
-            <div class="hand-visual-box">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                stroke-linejoin="round">
-                <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
-                <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
-                <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
-                <path
-                  d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
-              </svg>
+            <!-- Word selector tabs -->
+            <div class="gesture-tabs" id="gestureTabs">
+              <button class="gesture-tab is-active" data-word="YES" data-conf="91">YES</button>
+              <button class="gesture-tab" data-word="NO" data-conf="88">NO</button>
+              <button class="gesture-tab" data-word="DRINK" data-conf="76">DRINK</button>
+              <button class="gesture-tab" data-word="DEAF" data-conf="83">DEAF</button>
+              <button class="gesture-tab" data-word="NOW" data-conf="79">NOW</button>
             </div>
 
-            <!-- Small Label -->
-            <div class="gesture-info-meta">
-              <span class="gesture-label-text">HELLO</span>
-              <span class="gesture-confidence-text">94% confidence</span>
+            <!-- Fixed-height view container: gesture view ↔ sensor view -->
+            <div class="card-view-container">
+
+              <!-- VIEW A: gesture (default visible) -->
+              <div class="card-view card-view--gesture is-active" id="viewGesture">
+                <div class="hand-visual-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
+                    <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
+                    <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
+                    <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+                  </svg>
+                </div>
+                <div class="gesture-info-meta">
+                  <span class="gesture-label-text" id="heroGestureWord">YES</span>
+                  <span class="gesture-confidence-text" id="heroGestureConf">91% confidence</span>
+                </div>
+                <div class="gesture-speech-flow">
+                  <span>Gesture</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline>
+                  </svg>
+                  <span>Speech</span>
+                </div>
+              </div>
+
+              <!-- VIEW B: sensor data (hidden by default) -->
+              <div class="card-view card-view--sensor" id="viewSensor">
+                <p class="finger-chart-title">Finger Sensor Data</p>
+                <div class="finger-chart">
+                  <div class="finger-row"><span class="finger-label">Thumb</span><div class="finger-bar-track"><div class="finger-bar" id="fbarThumb" style="width:85%"></div></div><span class="finger-val" id="fvalThumb">85%</span></div>
+                  <div class="finger-row"><span class="finger-label">Index</span><div class="finger-bar-track"><div class="finger-bar" id="fbarIndex" style="width:90%"></div></div><span class="finger-val" id="fvalIndex">90%</span></div>
+                  <div class="finger-row"><span class="finger-label">Middle</span><div class="finger-bar-track"><div class="finger-bar" id="fbarMiddle" style="width:88%"></div></div><span class="finger-val" id="fvalMiddle">88%</span></div>
+                  <div class="finger-row"><span class="finger-label">Ring</span><div class="finger-bar-track"><div class="finger-bar" id="fbarRing" style="width:20%"></div></div><span class="finger-val" id="fvalRing">20%</span></div>
+                  <div class="finger-row"><span class="finger-label">Little</span><div class="finger-bar-track"><div class="finger-bar" id="fbarLittle" style="width:15%"></div></div><span class="finger-val" id="fvalLittle">15%</span></div>
+                </div>
+              </div>
+
             </div>
 
-            <!-- Subtle Arrow: Gesture → Speech -->
-            <div class="gesture-speech-flow">
-              <span>Gesture</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-              <span>Speech</span>
+            <!-- Bottom action row: toggle + listen -->
+            <div class="card-action-row">
+              <button class="card-view-toggle" id="cardViewToggle" type="button">Sensor Data</button>
+              <button class="listen-sample-btn" id="heroListenBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+                Listen
+              </button>
             </div>
-
-            <!-- Gentle Sample Pronunciation Button -->
-            <button class="listen-sample-btn" id="heroListenBtn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-              </svg>
-              <span>Listen to Speech</span>
-            </button>
 
           </div>
         </div>

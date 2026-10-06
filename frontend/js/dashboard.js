@@ -123,10 +123,6 @@
     const isLoggedIn = localStorage.getItem('echohand_logged_in') === 'true';
     const banner = $('guestBanner');
     if (!isLoggedIn && banner) banner.hidden = false;
-
-    $('dismissGuestBanner')?.addEventListener('click', () => {
-      if (banner) banner.hidden = true;
-    });
   }
 
   /* ── Public API ─────────────────────────────────────────── */

@@ -14,6 +14,8 @@
   let canvas       = null;
   let ctx          = null;
   let subtitleHistory = [];
+  let running      = false;   // true only while camera+session are active
+  let abortCtrl    = null;    // AbortController for in-flight fetch calls
 
   // ── Status helpers ────────────────────────────────────────
   function setStatusLabel(msg) {
@@ -78,7 +80,7 @@
   // ── Frame capture + inference loop ───────────────────────
   function captureAndSend() {
     const video = $('cameraFeed');
-    if (!video || !stream || video.readyState < 2) return;
+    if (!running || !video || !stream || video.readyState < 2) return;
 
     if (!canvas) {
       canvas = document.createElement('canvas');
@@ -93,25 +95,28 @@
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ frame: b64 }),
+      signal:  abortCtrl?.signal,
     })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (!data) return;
-        // Always update top-3 display on every frame
+        if (!data || !running) return;  // discard if session already stopped
         updateTop3(data.top3, data.buffer_fill ?? 0);
-        // Only push word when stabilizer commits one
         if (data.word) pushWord(data.word);
       })
-      .catch(() => {});
+      .catch(() => {});  // AbortError lands here — silently ignored
   }
 
   function startInferenceLoop() {
     stopInferenceLoop();
+    abortCtrl = new AbortController();
+    running   = true;
     frameTimer = setInterval(captureAndSend, FRAME_INTERVAL_MS);
   }
 
   function stopInferenceLoop() {
+    running = false;
     if (frameTimer) { clearInterval(frameTimer); frameTimer = null; }
+    if (abortCtrl)  { abortCtrl.abort(); abortCtrl = null; }
   }
 
   // ── Camera start ──────────────────────────────────────────

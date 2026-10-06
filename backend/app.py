@@ -43,13 +43,6 @@ def create_app():
         except Exception as err:
             logger.warning(f"MongoDB Atlas not reachable at startup: {err}")
 
-    # Initialize DB indexes on startup (non-fatal if Atlas unreachable)
-    with app.app_context():
-        try:
-            init_db()
-        except Exception as err:
-            logger.warning(f"MongoDB Atlas not reachable at startup: {err}")
-
     # Global Health Check Endpoint
     @app.route('/api/health', methods=['GET'])
     def health_check():

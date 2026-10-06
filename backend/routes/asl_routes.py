@@ -7,8 +7,6 @@ import time
 import logging
 from collections import deque
 
-import cv2
-import numpy as np
 from flask import Blueprint, request, jsonify
 
 logger = logging.getLogger("echohand.asl")
@@ -117,6 +115,7 @@ def process_frame():
         return jsonify({"word": None, "top3": [], "buffer_fill": 0}), 200
 
     try:
+        import cv2, numpy as np
         img_bytes = base64.b64decode(b64.split(",")[-1])
         arr = np.frombuffer(img_bytes, dtype=np.uint8)
         frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
@@ -135,7 +134,7 @@ def process_frame():
         buffer_fill = len(s["buffer"])
 
         if buffer_fill == _C.SEQ_LEN and pose_present:
-            import torch
+            import torch, numpy as np
             x = torch.tensor(np.stack(s["buffer"])[None], dtype=torch.float32)
             with torch.no_grad():
                 probs = torch.softmax(_model(x), dim=1)[0]

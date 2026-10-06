@@ -5,28 +5,19 @@
    Palette: #051F20 | #0B2B26 | #163832 | #235347 | #8EBB9B | #DAF1DE
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   /* EchoHand Palette */
   --c-mint-light: #DAF1DE;
-  /* 70% Dominant Base Background */
   --c-white-tint: #FFFFFF;
-  /* Clean Card Surfaces */
   --c-mint-surface: #Eaf5ec;
-  /* Soft tinted surfaces */
   --c-mint-sage: #8EBB9B;
-  /* Medium Sage Accent */
   --c-forest-border: #235347;
-  /* Refined border & divider tone */
   --c-forest-muted: #163832;
-  /* Secondary Text */
   --c-forest-deep: #0B2B26;
-  /* Headings & Dark Elements */
   --c-forest-dark: #051F20;
-  /* Primary Body Text & Footers */
 
-  /* Semantic UI Tokens */
   --bg-page: var(--c-mint-light);
   --bg-card: var(--c-white-tint);
   --bg-card-hover: #F8FDF9;
@@ -41,21 +32,18 @@
   --border-card: rgba(35, 83, 71, 0.10);
   --border-focus: #235347;
 
-  /* Restrained Warm Accent for Emergency (Calm, Not Alarmist) */
   --warm-accent: #C85A48;
   --warm-accent-subtle: rgba(200, 90, 72, 0.08);
   --warm-accent-border: rgba(200, 90, 72, 0.25);
 
-  /* Subtle, Soft Shadows */
   --shadow-subtle: 0 2px 8px rgba(5, 31, 32, 0.03);
   --shadow-card: 0 8px 30px rgba(5, 31, 32, 0.05);
   --shadow-hover: 0 12px 36px rgba(5, 31, 32, 0.08);
 
-  /* Typography */
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-serif: 'Lora', Georgia, serif;
+  /* Pogonia-style font — Nunito is the closest Google Fonts match */
+  --font-sans: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Nunito', Georgia, serif;
 
-  /* Layout */
   --max-width: 1140px;
   --header-height: 80px;
   --radius-sm: 8px;
@@ -74,11 +62,12 @@
   padding: 0;
 }
 
+/* Hide scrollbar on all pages, keep scroll functional */
 html {
-  scroll-behavior: smooth;
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
 }
 
 body {

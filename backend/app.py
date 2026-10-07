@@ -8,7 +8,8 @@ from backend.utils.db import init_db, check_db_connection
 from backend.routes.auth_routes import auth_bp
 from backend.routes.asl_routes import asl_bp
 from backend.routes.emergency_routes import emergency_bp, notification_bp
-from backend.services.firebase_service import init_firebase
+from backend.services.firebase_service import init_firebase, get_resolved_admin_project_id
+from backend.utils.firebase_admin_config import validate_firebase_admin_configuration
 
 # Configure structured logging
 logging.basicConfig(
@@ -48,9 +49,22 @@ def create_app():
             logger.warning(f"MongoDB Atlas not reachable at startup: {err}")
 
         try:
-            init_firebase(app)
+            admin_ready, admin_project_id, admin_errors = validate_firebase_admin_configuration()
+            if not admin_ready:
+                for msg in admin_errors:
+                    logger.error("Firebase Admin not ready at startup: %s", msg)
+            elif not init_firebase(app):
+                logger.error(
+                    "Firebase Admin startup initialization failed. Emergency FCM alerts will not send "
+                    "until FIREBASE_CREDENTIALS_PATH and FIREBASE_PROJECT_ID are configured."
+                )
+            else:
+                logger.info(
+                    "Firebase Admin ready for FCM (project_id=%s).",
+                    admin_project_id or get_resolved_admin_project_id(),
+                )
         except Exception as err:
-            logger.warning(f"Firebase Admin initialization deferred: {err}")
+            logger.warning("Firebase Admin initialization deferred: %s", err)
 
     # Global Health Check Endpoint
     @app.route('/api/health', methods=['GET'])
@@ -98,6 +112,7 @@ def create_app():
         if os.path.isfile(target):
             resp = send_from_directory(frontend_dir, 'firebase-messaging-sw.js', mimetype='application/javascript')
             resp.headers['Service-Worker-Allowed'] = '/'
+            resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
             return resp
         return jsonify({"error": "Service worker file not found"}), 404
 

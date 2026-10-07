@@ -1,9 +1,8 @@
 /**
  * ECHOHAND - Firebase Cloud Messaging Service Worker
- * Handles background push notifications, emergency alerts, and click routing.
+ * Build: 20260408 — keep in sync with ECHOHAND_FCM_SW_VERSION in firebase-config.js
  */
 
-// Import Firebase compat libraries inside Service Worker
 importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js');
 importScripts('/js/firebase-config.js');
@@ -20,9 +19,13 @@ function setupBackgroundMessaging(messaging) {
     const notif = payload.notification || {};
 
     const title = notif.title || data.title || '🚨 EchoHand Emergency Alert';
-    const body = notif.body || data.body || 'Emergency alert triggered. Immediate assistance may be required.';
+    const body = notif.body || data.body || 'Emergency assistance is required.';
 
-    const mapsUrl = data.maps_url || (data.latitude && data.longitude ? `https://www.google.com/maps?q=${data.latitude},${data.longitude}` : '');
+    const mapsUrl = data.maps_url || (
+      data.latitude && data.longitude
+        ? `https://www.google.com/maps?q=${data.latitude},${data.longitude}`
+        : ''
+    );
 
     const notificationOptions = {
       body: body,
@@ -58,7 +61,6 @@ function tryInitFirebase(config) {
   if (validator) {
     const res = validator(config);
     if (!res.isValid) {
-      console.warn('[EchoHand SW] Firebase Web Push not configured yet. Required fields missing:', res.missingFields);
       return null;
     }
   } else if (!config.apiKey || !config.projectId) {
@@ -66,8 +68,11 @@ function tryInitFirebase(config) {
   }
 
   try {
+    const appOptions = self.EchoHandToFirebaseAppOptions
+      ? self.EchoHandToFirebaseAppOptions(config)
+      : config;
     if (!firebase.apps.length) {
-      firebase.initializeApp(config);
+      firebase.initializeApp(appOptions);
     }
     messagingInstance = firebase.messaging();
     setupBackgroundMessaging(messagingInstance);
@@ -79,7 +84,28 @@ function tryInitFirebase(config) {
   }
 }
 
-// Lifecycle events
+async function loadConfigFromBackend() {
+  if (typeof self.EchoHandFetchFirebaseConfig !== 'function') {
+    return null;
+  }
+  try {
+    return await self.EchoHandFetchFirebaseConfig();
+  } catch (_) {
+    return null;
+  }
+}
+
+function applyConfigFromClient(config, replyPort) {
+  if (config && typeof config === 'object') {
+    self.EchoHandFirebaseConfig = Object.assign({}, self.EchoHandFirebaseConfig || {}, config);
+  }
+  const ok = Boolean(tryInitFirebase(self.EchoHandFirebaseConfig));
+  if (replyPort) {
+    replyPort.postMessage({ type: 'CONFIG_APPLIED', ok: ok });
+  }
+  return ok;
+}
+
 self.addEventListener('install', () => {
   self.skipWaiting();
 });
@@ -88,40 +114,35 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     (async () => {
       await self.clients.claim();
-      // Try to initialize using config already in scope or fetch from backend
-      if (!messagingInstance) {
-        if (self.EchoHandFirebaseConfig && tryInitFirebase(self.EchoHandFirebaseConfig)) {
-          return;
-        }
-        if (typeof fetch === 'function') {
-          try {
-            const res = await fetch('/api/notifications/config', { headers: { 'Accept': 'application/json' } });
-            if (res.ok) {
-              const data = await res.json();
-              if (data && data.is_configured && data.config) {
-                self.EchoHandFirebaseConfig = Object.assign({}, self.EchoHandFirebaseConfig || {}, data.config);
-                tryInitFirebase(self.EchoHandFirebaseConfig);
-              }
-            }
-          } catch (_) {}
-        }
-      }
+      await loadConfigFromBackend();
+      tryInitFirebase(self.EchoHandFirebaseConfig);
     })()
   );
 });
 
-// Receive live configuration from active client pages
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SET_CONFIG' && event.data.config) {
-    self.EchoHandFirebaseConfig = Object.assign({}, self.EchoHandFirebaseConfig || {}, event.data.config);
-    tryInitFirebase(self.EchoHandFirebaseConfig);
+  const data = event.data;
+  if (!data || typeof data !== 'object') return;
+
+  if (data.type === 'SET_CONFIG') {
+    const replyPort = (data.expectAck && event.ports && event.ports[0]) ? event.ports[0] : null;
+    applyConfigFromClient(data.config, replyPort);
+  } else if (data.type === 'FETCH_CONFIG') {
+    event.waitUntil(
+      loadConfigFromBackend().then(cfg => {
+        tryInitFirebase(cfg || self.EchoHandFirebaseConfig);
+        if (event.ports && event.ports[0]) {
+          event.ports[0].postMessage({
+            type: 'CONFIG_FETCHED',
+            ok: Boolean(messagingInstance),
+            isConfigured: Boolean(self.EchoHandFirebaseConfig && self.EchoHandFirebaseConfig.isConfigured)
+          });
+        }
+      })
+    );
   }
 });
 
-// Initial synchronous attempt with current scope config
-tryInitFirebase(self.EchoHandFirebaseConfig);
-
-// Notification click interaction handler
 self.addEventListener('notificationclick', event => {
   event.notification.close();
 
@@ -129,15 +150,12 @@ self.addEventListener('notificationclick', event => {
   const action = event.action;
 
   let targetUrl = '/dashboard.html';
-  if (action === 'open_maps' && data.maps_url) {
-    targetUrl = data.maps_url;
-  } else if (data.maps_url) {
+  if ((action === 'open_maps' || !action) && data.maps_url) {
     targetUrl = data.maps_url;
   }
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-      // Focus existing EchoHand window if open
       for (const client of clientList) {
         if (client.url && client.url.includes('dashboard') && 'focus' in client) {
           if (targetUrl.startsWith('http') && targetUrl.includes('google.com/maps')) {
@@ -146,7 +164,6 @@ self.addEventListener('notificationclick', event => {
           return client.focus();
         }
       }
-      // If no window open, open target URL
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
       }

@@ -240,7 +240,9 @@ FIREBASE_APP_ID=1:...:web:...
 FIREBASE_VAPID_KEY=BEl...
 ```
 
-You can also update default fallback values in `frontend/js/firebase-config.js`.
+The dashboard loads Web Push settings at runtime from `GET /api/notifications/config` (backed by `backend/.env`). Do not hard-code Firebase values in `frontend/js/firebase-config.js`.
+
+For **ngrok** or other public HTTPS URLs, add your tunnel host under Firebase Console → **Authentication** → **Settings** → **Authorized domains**, and if your Google Cloud **API key** is HTTP-referrer restricted, allow your ngrok origin (for example `https://*.ngrok-free.app/*`).
 
 ### 4. How Emergency Contacts Register Their Devices
 

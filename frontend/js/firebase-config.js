@@ -15,8 +15,12 @@
   // Known placeholder tokens to detect unconfigured Firebase credentials
   const PLACEHOLDER_TOKENS = [
     'dummy', 'placeholder', 'your-', 'aizasydummy',
-    '123456789012', 'abcdef1234567890', 'beldummy'
+    '123456789012', 'abcdef1234567890', 'beldummy',
+    'your-project-id', 'your-messaging-sender-id', 'your-vapid-key',
+    'echohand-emergency'
   ];
+
+  const APP_ID_PATTERN = /^1:\d+:web:[0-9a-fA-F]+$/;
 
   /**
    * Validates whether a Firebase client configuration object has real, non-placeholder credentials.
@@ -37,18 +41,51 @@
         missing.push(key);
       } else {
         const valLower = val.toLowerCase();
-        if (PLACEHOLDER_TOKENS.some(token => valLower.includes(token))) {
+        if (val.includes('...')) {
           missing.push(key);
-        } else if (key === 'apiKey' && !val.startsWith('AIzaSy')) {
+        } else if (PLACEHOLDER_TOKENS.some(token => valLower === token || valLower.includes(token) && key !== 'messagingSenderId')) {
+          missing.push(key);
+        } else if (key === 'apiKey' && (!val.startsWith('AIzaSy') || val.length < 30)) {
+          missing.push(key);
+        } else if (key === 'appId' && !APP_ID_PATTERN.test(val)) {
+          missing.push(key);
+        } else if (key === 'messagingSenderId' && !/^\d+$/.test(val)) {
+          missing.push(key);
+        } else if (key === 'vapidKey' && val.length < 80) {
           missing.push(key);
         }
       }
     });
 
+    const appId = String(cfg.appId || '').trim();
+    const senderId = String(cfg.messagingSenderId || '').trim();
+    if (appId && senderId && APP_ID_PATTERN.test(appId)) {
+      const parts = appId.split(':');
+      if (parts[1] !== senderId) {
+        if (!missing.includes('appId')) missing.push('appId');
+        if (!missing.includes('messagingSenderId')) missing.push('messagingSenderId');
+      }
+    }
+
     return {
       isValid: missing.length === 0,
       isPlaceholder: missing.length > 0,
       missingFields: missing
+    };
+  }
+
+  /**
+   * Firebase App options only (vapidKey is for getToken, not initializeApp).
+   */
+  function toFirebaseAppOptions(cfg) {
+    const source = cfg || {};
+    return {
+      apiKey: source.apiKey,
+      authDomain: source.authDomain,
+      projectId: source.projectId,
+      storageBucket: source.storageBucket,
+      messagingSenderId: source.messagingSenderId,
+      appId: source.appId
     };
   }
 
@@ -68,6 +105,7 @@
   const userOverride = globalScope.ECHOHAND_FIREBASE_CONFIG || globalScope.firebaseConfig || {};
   globalScope.EchoHandFirebaseConfig = Object.assign({}, initialConfig, userOverride);
   globalScope.EchoHandValidateFirebaseConfig = validateFirebaseConfig;
+  globalScope.EchoHandToFirebaseAppOptions = toFirebaseAppOptions;
 
   /**
    * Resolves the API base URL.
@@ -85,6 +123,39 @@
    * Fetches live Firebase client configuration from Flask backend /api/notifications/config.
    * Can run in Window or ServiceWorker context.
    */
+  /**
+   * Merge API /notifications/config payload into the in-memory client config.
+   */
+  function applyFirebaseConfigPayload(data) {
+    if (!data || typeof data !== 'object') {
+      return globalScope.EchoHandFirebaseConfig;
+    }
+
+    globalScope.EchoHandFirebaseConfigMeta = {
+      isConfigured: Boolean(data.is_configured),
+      missingFields: data.missing_fields || [],
+      configIssues: data.config_issues || [],
+      adminProjectId: data.admin_project_id || null
+    };
+
+    if (data.config && typeof data.config === 'object') {
+      Object.keys(data.config).forEach(k => {
+        const val = String(data.config[k] || '').trim();
+        if (val) {
+          globalScope.EchoHandFirebaseConfig[k] = val;
+        }
+      });
+    }
+
+    const validation = validateFirebaseConfig(globalScope.EchoHandFirebaseConfig);
+    globalScope.EchoHandFirebaseConfig.isConfigured = validation.isValid;
+    globalScope.EchoHandFirebaseConfig.missingFields = validation.missingFields;
+
+    return globalScope.EchoHandFirebaseConfig;
+  }
+
+  globalScope.EchoHandApplyFirebaseConfigPayload = applyFirebaseConfigPayload;
+
   globalScope.EchoHandFetchFirebaseConfig = async function () {
     if (typeof fetch !== 'function') {
       return globalScope.EchoHandFirebaseConfig;
@@ -93,34 +164,29 @@
     try {
       const apiBase = getApiBase();
       const res = await fetch(`${apiBase}/api/notifications/config`, {
-        headers: { 'Accept': 'application/json' }
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store'
       });
 
       if (res.ok) {
         const data = await res.json();
-        if (data && data.config) {
-          Object.keys(data.config).forEach(k => {
-            const val = String(data.config[k] || '').trim();
-            if (val) {
-              globalScope.EchoHandFirebaseConfig[k] = val;
-            }
-          });
-        }
+        applyFirebaseConfigPayload(data);
       }
     } catch (err) {
       console.warn('[EchoHand Firebase] Could not fetch runtime config from backend:', err);
     }
 
-    const validation = validateFirebaseConfig(globalScope.EchoHandFirebaseConfig);
-    globalScope.EchoHandFirebaseConfig.isConfigured = validation.isValid;
-    globalScope.EchoHandFirebaseConfig.missingFields = validation.missingFields;
-
     return globalScope.EchoHandFirebaseConfig;
   };
 
-  // If running in browser window, trigger eager background fetch of config
+  // Bump when service-worker / config delivery logic changes (cache bust for SW script URL).
+  globalScope.ECHOHAND_FCM_SW_VERSION = '20260408';
+
+  // Browser: eager fetch. Service worker: fetch on script load (SW has no window).
   if (typeof window !== 'undefined') {
     globalScope.EchoHandFetchFirebaseConfig().catch(() => {});
+  } else if (typeof self !== 'undefined' && typeof importScripts === 'function') {
+    self.EchoHandFetchFirebaseConfig().catch(() => {});
   }
 
 })();

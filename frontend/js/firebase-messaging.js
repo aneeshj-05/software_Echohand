@@ -11,6 +11,75 @@
   let swRegistration = null;
   let currentToken = null;
 
+  function getSwScriptUrl() {
+    // Scope must match a stable path served by Flask (/firebase-messaging-sw.js).
+    return '/firebase-messaging-sw.js';
+  }
+
+  /**
+   * Drop stale EchoHand service workers when the SW build version changes.
+   */
+  async function reconcileServiceWorkerVersion() {
+    if (!('serviceWorker' in navigator)) return;
+    const version = window.ECHOHAND_FCM_SW_VERSION || '20260408';
+    const storageKey = 'echohand_fcm_sw_version';
+    const previous = localStorage.getItem(storageKey);
+    if (previous && previous !== version) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(reg => reg.unregister()));
+      console.info('[EchoHand FCM] Unregistered stale service worker(s) after version change.');
+    }
+    localStorage.setItem(storageKey, version);
+  }
+
+  function getActiveWorker(registration) {
+    return registration.active || registration.waiting || registration.installing;
+  }
+
+  /**
+   * Push the same Firebase Web config the page uses into the service worker and wait for ack.
+   */
+  async function syncConfigToServiceWorker(config, registration) {
+    const reg = registration || swRegistration || await navigator.serviceWorker.ready;
+    const worker = getActiveWorker(reg);
+
+    if (!worker) {
+      await new Promise(resolve => {
+        const onChange = () => {
+          if (getActiveWorker(reg)) {
+            reg.removeEventListener('updatefound', onChange);
+            resolve();
+          }
+        };
+        reg.addEventListener('updatefound', onChange);
+        setTimeout(resolve, 3000);
+      });
+    }
+
+    const active = getActiveWorker(reg);
+    if (!active) {
+      throw new Error('Service worker is not active yet. Please refresh the page and try again.');
+    }
+
+    const applied = await new Promise((resolve, reject) => {
+      const channel = new MessageChannel();
+      const timeout = setTimeout(() => reject(new Error('Service worker did not apply Firebase configuration in time.')), 8000);
+      channel.port1.onmessage = (event) => {
+        clearTimeout(timeout);
+        resolve(Boolean(event.data && event.data.ok));
+      };
+      active.postMessage({ type: 'SET_CONFIG', config: config, expectAck: true }, [channel.port2]);
+    });
+
+    if (!applied) {
+      throw new Error(
+        'Service worker could not initialize Firebase. Check backend/.env Firebase Web settings and refresh.'
+      );
+    }
+
+    return reg;
+  }
+
   // Use relative URLs on HTTP/HTTPS so ngrok and same-origin ports always work
   const API_BASE = (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')
     ? 'http://127.0.0.1:5000'
@@ -56,31 +125,37 @@
         ? window.EchoHandValidateFirebaseConfig(config)
         : { isValid: Boolean(config.apiKey && config.projectId), missingFields: [] };
 
-      if (!validation.isValid) {
+      const meta = window.EchoHandFirebaseConfigMeta || {};
+      if (!validation.isValid || meta.isConfigured === false) {
         console.warn(
           '[EchoHand FCM] Firebase client configuration is incomplete or missing. Required fields:',
-          validation.missingFields
+          validation.missingFields,
+          meta.configIssues || []
         );
         return false;
       }
 
+      const appOptions = window.EchoHandToFirebaseAppOptions
+        ? window.EchoHandToFirebaseAppOptions(config)
+        : config;
+
       // 2. Initialize Firebase client app if not already initialized
       if (!firebase.apps.length) {
-        firebase.initializeApp(config);
+        firebase.initializeApp(appOptions);
       }
 
       messagingInstance = firebase.messaging();
 
-      // 3. Register Service Worker
-      swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-        scope: '/'
+      await reconcileServiceWorkerVersion();
+
+      // 3. Register Service Worker (versioned URL avoids stale cached SW scripts)
+      swRegistration = await navigator.serviceWorker.register(getSwScriptUrl(), {
+        scope: '/',
+        updateViaCache: 'none'
       });
       console.log('[EchoHand FCM] Service Worker registered with scope:', swRegistration.scope);
 
-      // Pass configuration to active Service Worker
-      if (swRegistration.active) {
-        swRegistration.active.postMessage({ type: 'SET_CONFIG', config: config });
-      }
+      await syncConfigToServiceWorker(config, swRegistration);
 
       // 4. Listen for foreground notifications
       messagingInstance.onMessage(payload => {
@@ -113,13 +188,17 @@
       ? window.EchoHandValidateFirebaseConfig(config)
       : { isValid: Boolean(config.apiKey && config.projectId), missingFields: [] };
 
-    if (!validation.isValid) {
+    const meta = window.EchoHandFirebaseConfigMeta || {};
+    if (!validation.isValid || meta.isConfigured === false) {
       const missingList = validation.missingFields && validation.missingFields.length
         ? validation.missingFields.join(', ')
         : 'apiKey, projectId, messagingSenderId, appId, vapidKey';
+      const issueHint = meta.configIssues && meta.configIssues.length
+        ? ` ${meta.configIssues[0]}`
+        : '';
       throw new Error(
-        `Firebase Web Push is not configured yet. Missing or placeholder fields: [${missingList}]. ` +
-        `Please configure your Firebase Web App credentials in backend/.env.`
+        `Firebase Web Push is not configured yet. Missing or placeholder fields: [${missingList}].` +
+        ` Configure FIREBASE_* values in backend/.env from the same Firebase Web app as your Admin SDK.${issueHint}`
       );
     }
 
@@ -128,6 +207,8 @@
       if (!initialized) {
         throw new Error('Failed to initialize Firebase Messaging with the provided configuration.');
       }
+    } else {
+      await syncConfigToServiceWorker(config, swRegistration);
     }
 
     // Request browser notification permission
@@ -158,7 +239,12 @@
       console.error('[EchoHand FCM] Error getting device token:', err);
 
       const errMsg = err.message || '';
-      if (errMsg.includes('INVALID_ARGUMENT') || errMsg.includes('API key not valid')) {
+      if (errMsg.includes('push service error') || errMsg.includes('AbortError')) {
+        throw new Error(
+          'Push registration failed. Ensure Firebase Web config is complete, notification permission is granted, ' +
+          'and the service worker received the same Firebase project settings as this page (try a hard refresh).'
+        );
+      } else if (errMsg.includes('INVALID_ARGUMENT') || errMsg.includes('API key not valid')) {
         throw new Error(
           'Invalid Firebase Web API key. Please check FIREBASE_API_KEY in backend/.env matches your Firebase Console Web App.'
         );

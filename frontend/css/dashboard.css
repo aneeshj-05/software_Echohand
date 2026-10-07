@@ -1046,6 +1046,34 @@ body {
 
 .emergency-panic-wrapper {
   margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.emergency-help-open-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.emergency-info-secondary {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  margin-top: 0.5rem;
+}
+
+.emergency-contact-optional {
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+}
+
+.emergency-contact-optional summary {
+  cursor: pointer;
+  color: var(--eh-muted, #5a6b62);
+}
+
+.emergency-contact-optional-body {
+  margin-top: 0.5rem;
 }
 
 .emergency-panic-btn {

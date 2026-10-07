@@ -1,7 +1,6 @@
 /**
  * ECHOHAND - Emergency System
- * Handles HELP gesture detection, manual panic button, geolocation acquisition,
- * and dispatching Firebase Cloud Messaging (FCM) emergency alerts.
+ * Device registration (Emergency Help) is separate from emergency alert dispatch.
  */
 
 (function () {
@@ -10,17 +9,14 @@
   const $ = id => document.getElementById(id);
 
   let currentLocation = null;
-  let alertTriggered = false; // Debounce flag to prevent duplicate alerts
+  let alertTriggered = false;
 
   const API_BASE = (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')
     ? 'http://127.0.0.1:5000'
     : '';
 
-
-  // ── Get location (returns a Promise) ────────────────────
   function fetchLocation() {
     return new Promise((resolve, reject) => {
-      if (currentLocation) { resolve(currentLocation); return; }
       if (!navigator.geolocation) { reject(new Error('Geolocation not supported')); return; }
       navigator.geolocation.getCurrentPosition(
         pos => {
@@ -37,11 +33,22 @@
   }
 
   function mapsLink(loc) {
-    if (!loc) return 'Location unavailable';
+    if (!loc) return '';
     return `https://www.google.com/maps?q=${loc.lat},${loc.lng}`;
   }
 
-  // ── Update status box in modal ──────────────────────────
+  function resetEmergencyStatusUi() {
+    const box = $('emergencyStatusBox');
+    const locBox = $('emergencyLocationBox');
+    const badge = $('emergencyHelpBadge');
+    if (box) {
+      box.hidden = true;
+      box.className = 'emergency-status-box';
+    }
+    if (locBox) locBox.hidden = true;
+    if (badge) badge.classList.remove('is-alerting');
+  }
+
   function updateStatus(state, message) {
     const box = $('emergencyStatusBox');
     const text = $('emergencyStatusText');
@@ -64,7 +71,6 @@
     }
   }
 
-  // ── Update location display in modal ────────────────────
   function updateLocationBox(loc) {
     const box = $('emergencyLocationBox');
     const text = $('emergencyLocationText');
@@ -78,14 +84,13 @@
       : '📍 Location unavailable';
   }
 
-  // ── Send Alert via Backend Flask & Firebase Admin SDK ────
   async function sendBackendEmergencyAlert(source, loc) {
     const token = localStorage.getItem('echohand_token');
 
     if (!token) {
       return {
         success: false,
-        message: 'You are in guest mode. Please sign in to send automatic FCM alerts to your registered emergency contacts.'
+        message: 'Please sign in to send emergency alerts to registered contacts.'
       };
     }
 
@@ -129,17 +134,12 @@
     }
   }
 
-  // ── Render contacts with FCM Status & Controls ───────────
-  function renderContacts(loc) {
+  function renderContacts() {
     const list = $('emergencyContactsList');
     if (!list) return;
 
     let contacts = [];
     try { contacts = JSON.parse(localStorage.getItem('echohand_contacts')) || []; } catch (_) {}
-
-    const userName = (() => {
-      try { return JSON.parse(localStorage.getItem('echohand_user'))?.name || 'EchoHand user'; } catch (_) { return 'EchoHand user'; }
-    })();
 
     if (!contacts.length) {
       list.innerHTML = `<div class="emergency-no-contacts">
@@ -153,12 +153,8 @@
       const tokens = c.fcm_tokens || c.fcmTokens || [];
       const hasDevice = Array.isArray(tokens) && tokens.length > 0;
       const deviceLabel = hasDevice
-        ? `<span class="contact-fcm-pill is-active" title="${tokens.length} device(s) registered">🔔 Notifications Active (${tokens.length})</span>`
-        : `<span class="contact-fcm-pill is-inactive" title="No device registered yet">⚠️ Notifications Pending</span>`;
-
-      // Secondary WhatsApp fallback link for backup communication
-      const msg = `🚨 EchoHand Emergency Alert\n\nHELP triggered by ${userName}!\n📍 Location: ${mapsLink(loc)}`;
-      const waUrl = `https://wa.me/${c.phone ? c.phone.replace(/\D/g, '') : ''}?text=${encodeURIComponent(msg)}`;
+        ? `<span class="contact-fcm-pill is-active">🔔 Notifications Active</span>`
+        : `<span class="contact-fcm-pill is-inactive">Notifications not enabled on this device yet</span>`;
 
       return `
         <div class="emergency-contact-card" data-contact-id="${c.id}">
@@ -169,42 +165,43 @@
                 <span class="emergency-contact-name">${c.name}</span>
                 ${c.isPrimary || c.is_primary ? '<span class="primary-tag">Primary</span>' : ''}
               </div>
-              <span class="emergency-contact-meta">${c.phone || 'No phone'} ${c.relation ? '· ' + c.relation : ''}</span>
+              <span class="emergency-contact-meta">${c.relation ? c.relation : 'Emergency contact'}</span>
               <div class="emergency-contact-status-row">${deviceLabel}</div>
             </div>
           </div>
           <div class="emergency-contact-actions">
-            <button type="button" class="btn btn-outline btn-xs btn-enable-device" data-contact-id="${c.id}" title="Register this browser for ${c.name}">
-              📱 Enable on This Device
+            <button type="button" class="btn btn-primary btn-sm btn-enable-device" data-contact-id="${c.id}">
+              Enable on This Device
             </button>
-            <button type="button" class="btn btn-outline btn-xs btn-copy-invite" data-contact-id="${c.id}" title="Copy link for ${c.name} to enable alerts on their phone">
-              🔗 Share Invite Link
-            </button>
-            <a class="emergency-backup-wa" href="${waUrl}" target="_blank" rel="noopener noreferrer" title="Send WhatsApp backup message">
-              WhatsApp Backup
-            </a>
           </div>
+          <details class="emergency-contact-optional">
+            <summary>Optional backup (not required for push alerts)</summary>
+            <div class="emergency-contact-optional-body">
+              <button type="button" class="btn btn-outline btn-xs btn-copy-invite" data-contact-id="${c.id}">
+                Share Invite Link
+              </button>
+            </div>
+          </details>
         </div>
       `;
     }).join('');
 
-    // Wire actions
     list.querySelectorAll('.btn-enable-device').forEach(btn => {
       btn.addEventListener('click', async () => {
         const cId = parseInt(btn.dataset.contactId, 10);
         btn.disabled = true;
+        const originalText = btn.textContent;
         btn.textContent = 'Enabling…';
         try {
           if (!window.EchoHandFCM) throw new Error('Firebase messaging not initialized.');
           const res = await window.EchoHandFCM.registerWithBackend({ contactId: cId });
           window.EchoHand?.showToast?.(res.message || 'Device registered successfully!', 'mint', 3500);
-          btn.textContent = '✅ Enabled';
-          // Update cached contacts in localStorage
-          refreshUserProfileContacts();
+          btn.textContent = '✅ Notifications Active';
+          await refreshUserProfileContacts();
         } catch (err) {
-          window.EchoHand?.showToast?.(err.message || 'Failed to enable notifications.', 'crimson', 4000);
+          window.EchoHand?.showToast?.(err.message || 'Failed to enable notifications.', 'crimson', 5000);
           btn.disabled = false;
-          btn.textContent = '📱 Enable on This Device';
+          btn.textContent = originalText;
         }
       });
     });
@@ -213,28 +210,24 @@
       btn.addEventListener('click', async () => {
         const cId = parseInt(btn.dataset.contactId, 10);
         btn.disabled = true;
-        btn.textContent = 'Creating link…';
         try {
           if (!window.EchoHandFCM) throw new Error('Firebase messaging module unavailable.');
           const info = await window.EchoHandFCM.generateInviteLink(cId);
           if (navigator.clipboard && navigator.clipboard.writeText) {
             await navigator.clipboard.writeText(info.inviteUrl);
-            window.EchoHand?.showToast?.('Registration link copied! Send it to your contact via WhatsApp/SMS.', 'mint', 4000);
+            window.EchoHand?.showToast?.('Invite link copied (optional backup).', 'mint', 3500);
           } else {
-            prompt('Copy this registration link and send it to your contact:', info.inviteUrl);
+            prompt('Copy this optional invite link:', info.inviteUrl);
           }
-          btn.textContent = '✅ Copied!';
-          setTimeout(() => { btn.disabled = false; btn.textContent = '🔗 Share Invite Link'; }, 3000);
         } catch (err) {
           window.EchoHand?.showToast?.(err.message || 'Could not generate invite link.', 'crimson', 3500);
+        } finally {
           btn.disabled = false;
-          btn.textContent = '🔗 Share Invite Link';
         }
       });
     });
   }
 
-  // Helper to re-fetch contacts from server and update localStorage
   async function refreshUserProfileContacts() {
     const token = localStorage.getItem('echohand_token');
     if (!token) return;
@@ -247,77 +240,70 @@
         if (data.user && data.user.emergencyContacts) {
           localStorage.setItem('echohand_contacts', JSON.stringify(data.user.emergencyContacts));
           localStorage.setItem('echohand_user', JSON.stringify(data.user));
-          renderContacts(currentLocation);
+          renderContacts();
         }
       }
     } catch (_) {}
   }
 
-  // ── Core trigger — called by HELP gesture OR manual panic button ──
+  /** Opens Emergency Help for contact/notification setup only — no GPS, no alert. */
+  function openEmergencyHelpModal() {
+    resetEmergencyStatusUi();
+    window.EchoHandDashboard?.openModal('emergencyModal');
+    renderContacts();
+    refreshUserProfileContacts();
+  }
+
   async function triggerEmergency(source) {
-    // 1. Open the modal
     window.EchoHandDashboard?.openModal('emergencyModal');
 
-    // 2. Show pulsing alert badge
     const badge = $('emergencyHelpBadge');
     if (badge) badge.classList.add('is-alerting');
 
-    // 3. Update status: Getting location
     updateStatus('loading', 'Getting your location…');
 
     const locText = $('emergencyLocationText');
-    const locBox  = $('emergencyLocationBox');
-    if (locBox)  locBox.hidden = false;
+    const locBox = $('emergencyLocationBox');
+    if (locBox) locBox.hidden = false;
     if (locText) locText.textContent = '📍 Acquiring GPS coordinates…';
 
     let loc = null;
     try {
       loc = await fetchLocation();
       updateLocationBox(loc);
-    } catch (err) {
+    } catch (_) {
       if (locText) locText.textContent = '📍 Location unavailable — alert will be sent without coordinates.';
     }
 
-    // 4. Update status: Sending alert
-    updateStatus('loading', 'Sending emergency alert via Firebase Cloud Messaging…');
+    updateStatus('loading', 'Sending emergency alert…');
 
     if (source === 'gesture') {
       window.EchoHandSpeech?.speak('Help gesture detected. Sending emergency alert.');
     }
 
-    // 5. Send FCM alert via backend
     const alertResult = await sendBackendEmergencyAlert(source, loc);
 
-    // 6. Update UI with result
     if (alertResult.success) {
-      updateStatus('success', `Emergency alert sent successfully to registered contacts.`);
-      if (window.EchoHand?.showToast) {
-        window.EchoHand.showToast('🚨 Emergency alert dispatched to your contacts!', 'mint', 4000);
-      }
+      updateStatus('success', alertResult.message || 'Emergency alert sent successfully.');
+      window.EchoHand?.showToast?.('🚨 Emergency alert dispatched!', 'mint', 4000);
       if (source === 'gesture') {
         window.EchoHandSpeech?.speak('Emergency alert delivered.');
       }
     } else {
-      updateStatus('error', `Unable to send emergency alert: ${alertResult.message}`);
-      if (window.EchoHand?.showToast) {
-        window.EchoHand.showToast(alertResult.message, 'crimson', 5000);
-      }
+      updateStatus('error', alertResult.message || 'Unable to send emergency alert.');
+      window.EchoHand?.showToast?.(alertResult.message, 'crimson', 5000);
     }
 
-    // Render contacts
-    renderContacts(loc);
+    renderContacts();
   }
 
-  // ── Public: called by camera.js and glove.js on HELP ────
   function onHelpGesture() {
     if (alertTriggered) return;
     alertTriggered = true;
     triggerEmergency('gesture');
-    // Re-arm after 30s to prevent duplicate alerts
     setTimeout(() => { alertTriggered = false; }, 30000);
   }
 
-  // ── Handle Invite Link Onboarding (for contacts opening ?invite=...) ──
   async function handleContactInviteParam() {
     const urlParams = new URLSearchParams(window.location.search);
     const inviteToken = urlParams.get('invite');
@@ -328,111 +314,49 @@
       const verifyRes = await window.EchoHandFCM.verifyInviteToken(inviteToken);
       if (!verifyRes.success) return;
 
-      const userName = verifyRes.user_name || 'an EchoHand user';
-      const contactName = verifyRes.contact_name || 'Emergency Contact';
-
-      // Open emergency modal with specialized contact registration prompt
-      window.EchoHandDashboard?.openModal('emergencyModal');
-      updateStatus('loading', `Welcome, ${contactName}! Please enable notifications to receive emergency alerts for ${userName}.`);
-
-      const list = $('emergencyContactsList');
-      if (list) {
-        list.innerHTML = `
-          <div class="emergency-invite-prompt">
-            <div class="invite-banner-icon">🔔</div>
-            <h3>Emergency Alert Device Registration</h3>
-            <p>You are registered as a trusted emergency contact for <strong>${userName}</strong>.</p>
-            <p>Enable browser notifications on this device to receive immediate alerts if ${userName} triggers a HELP gesture or emergency alarm.</p>
-            <button type="button" class="btn btn-primary" id="btnAcceptInviteNotifications" style="margin-top:1rem;width:100%;">
-              Enable Emergency Notifications on This Device
-            </button>
-          </div>
-        `;
-
-        $('btnAcceptInviteNotifications')?.addEventListener('click', async () => {
-          const btn = $('btnAcceptInviteNotifications');
-          btn.disabled = true;
-          btn.textContent = 'Enabling Notifications…';
-          try {
-            const regRes = await window.EchoHandFCM.registerWithBackend({ inviteToken });
-            updateStatus('success', `Emergency notifications successfully enabled for ${contactName}!`);
-            list.innerHTML = `
-              <div class="emergency-invite-success">
-                <p>✅ <strong>Device successfully registered!</strong></p>
-                <p>You will now automatically receive high-priority emergency notifications with live GPS location whenever ${userName} requests assistance.</p>
-              </div>
-            `;
-            window.EchoHand?.showToast?.('Emergency notifications enabled on this device!', 'mint', 5000);
-          } catch (err) {
-            btn.disabled = false;
-            btn.textContent = 'Enable Emergency Notifications on This Device';
-            updateStatus('error', err.message || 'Failed to enable notifications. Please allow browser notifications and try again.');
-          }
-        });
-      }
+      openEmergencyHelpModal();
+      updateStatus('info', 'Enable notifications on this device using the button below.');
     } catch (err) {
       console.warn('[EchoHand Emergency] Invalid invite parameter:', err);
     }
   }
 
-  // ── Wire buttons and init ────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
-    // Manual emergency button (big red button on dashboard)
+    $('openEmergencyHelpBtn')?.addEventListener('click', () => openEmergencyHelpModal());
+
     $('emergencyPanicBtn')?.addEventListener('click', () => triggerEmergency('manual'));
 
-    // "Get My Location" button inside modal
+    $('emergencySendAlertBtn')?.addEventListener('click', () => triggerEmergency('manual'));
+
     $('emergencyGetLocationBtn')?.addEventListener('click', async () => {
       const locText = $('emergencyLocationText');
-      const locBox  = $('emergencyLocationBox');
-      if (locBox)  locBox.hidden = false;
+      const locBox = $('emergencyLocationBox');
+      if (locBox) locBox.hidden = false;
       if (locText) locText.textContent = '📍 Acquiring current location…';
       try {
         const loc = await fetchLocation();
         updateLocationBox(loc);
-        renderContacts(loc);
       } catch (_) {
-        if (locText) locText.textContent = '📍 Could not get location. Allow location access and retry.';
+        if (locText) locText.textContent = '📍 Could not get location.';
       }
     });
 
-    // Re-render contacts and fetch fresh profile when modal opens
     const modal = $('emergencyModal');
     if (modal) {
       new MutationObserver(() => {
         if (modal.classList.contains('is-open')) {
-          renderContacts(currentLocation);
-          refreshUserProfileContacts();
+          renderContacts();
         }
       }).observe(modal, { attributes: true, attributeFilter: ['class'] });
     }
 
-    // "Enable Emergency Notifications" button inside modal footer
-    $('emergencyEnableNotifsBtn')?.addEventListener('click', async () => {
-      const btn = $('emergencyEnableNotifsBtn');
-      btn.disabled = true;
-      btn.textContent = 'Enabling…';
-      try {
-        if (!window.EchoHandFCM) throw new Error('Firebase messaging module unavailable.');
-        const res = await window.EchoHandFCM.registerWithBackend();
-        window.EchoHand?.showToast?.(res.message || 'Notifications enabled for this device!', 'mint', 4000);
-        btn.textContent = '✅ Notifications Active';
-        updateStatus('success', 'Emergency notifications successfully enabled on this device.');
-        refreshUserProfileContacts();
-      } catch (err) {
-        window.EchoHand?.showToast?.(err.message || 'Failed to enable notifications.', 'crimson', 4500);
-        btn.disabled = false;
-        btn.textContent = '🔔 Enable Emergency Notifications';
-        updateStatus('error', err.message || 'Could not enable notifications.');
-      }
-    });
-
-    // Check for invite parameter in URL
     setTimeout(handleContactInviteParam, 500);
   });
 
   window.EchoHandEmergency = {
     onHelpGesture,
     triggerEmergency,
+    openEmergencyHelpModal,
     fetchLocation,
     sendBackendEmergencyAlert
   };

@@ -3,45 +3,15 @@ from flask import Blueprint, request, jsonify
 from backend.services.emergency_service import EmergencyService
 from backend.utils.security import token_required, decode_token
 from backend.config import Config
+from backend.utils.firebase_client_config import (
+    build_firebase_client_config,
+    validate_firebase_client_config,
+)
 
 logger = logging.getLogger(__name__)
 
 emergency_bp = Blueprint('emergency', __name__, url_prefix='/api/emergency')
 notification_bp = Blueprint('notifications', __name__, url_prefix='/api/notifications')
-
-
-# Known placeholder indicators in Firebase client configuration
-PLACEHOLDER_MARKERS = [
-    'dummy', 'placeholder', 'your-', 'aizasydummy',
-    '123456789012', 'abcdef1234567890', 'beldummy'
-]
-
-
-def validate_firebase_client_config(config_dict: dict):
-    """
-    Validates that client-side Firebase Web configuration fields are present and non-placeholder.
-    Returns (is_configured: bool, missing_fields: list[str])
-    """
-    required_keys = ['apiKey', 'projectId', 'messagingSenderId', 'appId', 'vapidKey']
-    missing_fields = []
-
-    for key in required_keys:
-        val = str(config_dict.get(key, '') or '').strip()
-        if not val:
-            missing_fields.append(key)
-            continue
-
-        val_lower = val.lower()
-        # Check against placeholder strings
-        if any(marker in val_lower for marker in PLACEHOLDER_MARKERS):
-            missing_fields.append(key)
-        elif key == 'apiKey' and not val.startswith('AIzaSy'):
-            missing_fields.append(key)
-        elif key == 'projectId' and val_lower == 'echohand-emergency' and not config_dict.get('apiKey'):
-            missing_fields.append(key)
-
-    is_configured = (len(missing_fields) == 0)
-    return is_configured, missing_fields
 
 
 # ── Notification Endpoints ──────────────────────────────────────────
@@ -53,22 +23,19 @@ def get_notification_config():
     Includes configuration status and validation details.
     Never exposes backend private keys.
     """
-    cfg = {
-        "apiKey": Config.FIREBASE_API_KEY,
-        "authDomain": Config.FIREBASE_AUTH_DOMAIN,
-        "projectId": Config.FIREBASE_PROJECT_ID,
-        "storageBucket": Config.FIREBASE_STORAGE_BUCKET,
-        "messagingSenderId": Config.FIREBASE_MESSAGING_SENDER_ID,
-        "appId": Config.FIREBASE_APP_ID,
-        "vapidKey": Config.FIREBASE_VAPID_KEY
-    }
+    cfg = build_firebase_client_config(Config)
 
-    is_configured, missing_fields = validate_firebase_client_config(cfg)
+    is_configured, missing_fields, config_issues = validate_firebase_client_config(
+        cfg,
+        admin_project_id=Config.FIREBASE_ADMIN_PROJECT_ID,
+    )
 
     return jsonify({
         "success": True,
         "is_configured": is_configured,
         "missing_fields": missing_fields,
+        "config_issues": config_issues,
+        "admin_project_id": Config.FIREBASE_ADMIN_PROJECT_ID,
         "config": cfg
     }), 200
 
@@ -233,12 +200,28 @@ def trigger_emergency_alert(current_user):
     lat = data.get('latitude') or data.get('lat')
     lng = data.get('longitude') or data.get('lng')
 
+    user_id = current_user.get('id')
+    logger.info(
+        "POST /api/emergency/alert user_id=%s source=%s lat=%s lng=%s",
+        user_id,
+        source,
+        lat,
+        lng,
+    )
+
     result = EmergencyService.send_emergency_alert(
-        user_id=current_user['id'],
+        user_id=user_id,
         source=source,
         lat=lat,
         lng=lng
     )
 
     status_code = result.pop("status_code", 200)
+    if not result.get("success"):
+        logger.warning(
+            "Emergency alert failed user_id=%s status=%s message=%s",
+            user_id,
+            status_code,
+            result.get("message"),
+        )
     return jsonify(result), status_code

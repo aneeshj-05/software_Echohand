@@ -129,10 +129,12 @@ class EmergencyService:
                 tokens = []
 
             # Append token if not already stored
+            token_added = False
             if clean_token not in tokens:
                 tokens.append(clean_token)
                 target_contact["fcm_tokens"] = tokens
                 contacts[target_index] = target_contact
+                token_added = True
 
                 now = datetime.now(timezone.utc)
                 database.users.update_one(
@@ -144,11 +146,21 @@ class EmergencyService:
                         }
                     }
                 )
+            else:
+                logger.info(
+                    "FCM token already registered for contact %s (user %s); skipping duplicate.",
+                    target_contact.get("name", "contact"),
+                    user_id,
+                )
 
             return {
                 "success": True,
                 "status_code": 200,
-                "message": f"Device notification successfully enabled for {target_contact.get('name', 'contact')}.",
+                "message": (
+                    f"Device registered successfully for {target_contact.get('name', 'contact')}."
+                    if token_added
+                    else f"Notifications already active for {target_contact.get('name', 'contact')} on this device."
+                ),
                 "contact": {
                     "id": target_contact.get("id"),
                     "name": target_contact.get("name"),
@@ -230,6 +242,7 @@ class EmergencyService:
             database = db.get_db()
             user_doc = database.users.find_one({"_id": ObjectId(user_id)})
             if not user_doc:
+                logger.warning("Emergency alert: user not found (id=%s)", user_id)
                 return {
                     "success": False,
                     "status_code": 404,
@@ -238,6 +251,15 @@ class EmergencyService:
 
             user_name = user_doc.get("name", "EchoHand User")
             contacts = user_doc.get("emergency_contacts", [])
+
+            logger.info(
+                "Emergency alert requested by user_id=%s source=%s coords=(%s,%s) contacts=%d",
+                user_id,
+                clean_source,
+                clean_lat,
+                clean_lng,
+                len(contacts),
+            )
 
             if not contacts:
                 return {
@@ -259,32 +281,35 @@ class EmergencyService:
             # Remove duplicate tokens
             all_tokens = list(dict.fromkeys(all_tokens))
 
+            logger.info(
+                "Emergency alert token summary user_id=%s contacts_with_tokens=%d unique_tokens=%d",
+                user_id,
+                len(contacts_with_tokens),
+                len(all_tokens),
+            )
+
             if not all_tokens:
                 return {
                     "success": False,
                     "status_code": 422,
                     "message": (
-                        "No registered device notification tokens found for your emergency contacts. "
-                        "Please have your contacts enable notifications using their device registration link."
+                        "Emergency contact has not registered a notification device. "
+                        "Ask them to open Emergency Help and tap Enable on This Device."
                     ),
                     "contacts_configured": len(contacts),
                     "contacts_with_tokens": 0
                 }
 
-            # Build alert content
+            # Build alert content (USER location — not the contact's device location)
             title = "🚨 EchoHand Emergency Alert"
-
-            if clean_source == "gesture":
-                body = f"HELP gesture detected for {user_name}. Immediate assistance may be required."
-            else:
-                body = f"Manual emergency alert triggered by {user_name}. Immediate assistance may be required."
+            body = "Emergency assistance is required."
 
             if clean_lat is not None and clean_lng is not None:
                 maps_url = f"https://www.google.com/maps?q={clean_lat},{clean_lng}"
-                body += f"\nLocation: {maps_url}"
+                body += f"\n\nLocation:\n{maps_url}"
             else:
                 maps_url = ""
-                body += "\nLocation: Unavailable"
+                body += "\n\nLocation: Unavailable"
 
             data_payload = {
                 "type": "emergency",
@@ -303,12 +328,26 @@ class EmergencyService:
                 title=title,
                 body=body,
                 data_payload=data_payload,
-                click_url=maps_url
+                click_url=maps_url or None
+            )
+
+            logger.info(
+                "Emergency FCM result user_id=%s success=%s success_count=%s failure_count=%s invalid=%d",
+                user_id,
+                fcm_result.get("success"),
+                fcm_result.get("success_count"),
+                fcm_result.get("failure_count"),
+                len(fcm_result.get("invalid_tokens") or []),
             )
 
             # Prune invalid tokens if detected
             invalid_tokens = fcm_result.get("invalid_tokens", [])
             if invalid_tokens:
+                logger.info(
+                    "Pruning %d invalid FCM token(s) for user_id=%s",
+                    len(invalid_tokens),
+                    user_id,
+                )
                 EmergencyService.remove_fcm_tokens(user_id, invalid_tokens)
 
             if fcm_result.get("success"):
@@ -321,16 +360,30 @@ class EmergencyService:
                     "maps_url": maps_url,
                     "source": clean_source
                 }
-            else:
+
+            error_text = fcm_result.get("error") or "Unknown FCM error"
+            err_lower = str(error_text).lower()
+            if "not initialized" in err_lower or "not configured" in err_lower:
                 return {
                     "success": False,
-                    "status_code": 502,
-                    "message": f"Unable to deliver alert via Firebase: {fcm_result.get('error', 'Unknown FCM error')}",
-                    "details": fcm_result
+                    "status_code": 503,
+                    "message": (
+                        "Firebase Admin SDK is not configured on the server. "
+                        "Set FIREBASE_CREDENTIALS_PATH (or GOOGLE_APPLICATION_CREDENTIALS) and "
+                        "FIREBASE_PROJECT_ID, then restart the backend."
+                    ),
                 }
 
+            return {
+                "success": False,
+                "status_code": 502,
+                "message": f"Unable to deliver alert via Firebase: {error_text}",
+                "tokens_attempted": len(all_tokens),
+                "failure_count": fcm_result.get("failure_count"),
+            }
+
         except Exception as e:
-            logger.error(f"Error executing emergency alert: {str(e)}")
+            logger.exception("Error executing emergency alert for user_id=%s", user_id)
             return {
                 "success": False,
                 "status_code": 500,

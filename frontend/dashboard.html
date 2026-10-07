@@ -108,7 +108,7 @@
 
       </section>
 
-      <!-- EMERGENCY PANIC BUTTON -->
+      <!-- EMERGENCY CONTROLS -->
       <div class="emergency-panic-wrapper">
         <button class="emergency-panic-btn" id="emergencyPanicBtn" type="button">
           <span class="emergency-panic-icon">
@@ -121,10 +121,13 @@
             </svg>
           </span>
           <span class="emergency-panic-text">
-            <strong>Emergency Help</strong>
-            <span>Tap to send alert to your contacts</span>
+            <strong>Send Emergency Alert</strong>
+            <span>Uses your GPS and notifies registered contacts</span>
           </span>
           <span class="emergency-panic-pulse" aria-hidden="true"></span>
+        </button>
+        <button class="btn btn-secondary btn-sm emergency-help-open-btn" id="openEmergencyHelpBtn" type="button">
+          Emergency Help — contacts &amp; notifications
         </button>
       </div>
 
@@ -531,12 +534,8 @@
     </div>
 
     <div class="emergency-info-text">
-      <p>Use the <strong>HELP</strong> gesture or panic button when emergency assistance is needed.</p>
-      <ul>
-        <li>EchoHand automatically queries your real-time GPS location.</li>
-        <li>Instant push alerts are dispatched to your emergency contacts via Firebase Cloud Messaging.</li>
-        <li>Contacts receive audible alerts with a direct Google Maps location link on their device.</li>
-      </ul>
+      <p><strong>Register this phone</strong> so you can receive emergency push alerts. No alert is sent when you enable notifications.</p>
+      <p class="emergency-info-secondary">When the account holder triggers HELP or <em>Send Emergency Alert</em>, registered devices receive the user&apos;s live location.</p>
     </div>
 
     <!-- Status of GPS and FCM alert dispatch -->
@@ -551,11 +550,11 @@
     <div class="emergency-contacts-list" id="emergencyContactsList"></div>
 
     <div class="eh-modal-footer emergency-modal-footer">
-      <button class="btn btn-secondary btn-sm" id="emergencyGetLocationBtn" type="button">
-        📍 Get Location
+      <button class="btn btn-primary btn-sm" id="emergencySendAlertBtn" type="button" title="Send emergency alert with your current GPS location">
+        🚨 Send Emergency Alert
       </button>
-      <button class="btn btn-primary btn-sm" id="emergencyEnableNotifsBtn" type="button" title="Enable browser notifications for emergency alerts">
-        🔔 Enable Emergency Notifications
+      <button class="btn btn-secondary btn-sm" id="emergencyGetLocationBtn" type="button" hidden>
+        📍 Get Location
       </button>
     </div>
   </div>

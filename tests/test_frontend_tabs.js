@@ -105,7 +105,7 @@ global.localStorage = {
 global.EchoHand = { showToast: () => {} };
 
 // Load and evaluate auth-page.js
-const authPageCode = fs.readFileSync(path.join(__dirname, '../frontend1/js/auth-page.js'), 'utf8');
+const authPageCode = fs.readFileSync(path.join(__dirname, '../frontend/js/auth-page.js'), 'utf8');
 eval(authPageCode);
 
 console.log("=== Testing EchoHand Auth Page Controls ===");

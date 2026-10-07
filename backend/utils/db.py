@@ -7,11 +7,20 @@ logger = logging.getLogger(__name__)
 
 _mongo_client = None
 _database = None
+_last_uri = None  # track URI so a config change forces reconnect
 
 
 def get_client():
     """Returns the singleton MongoClient instance."""
-    global _mongo_client
+    global _mongo_client, _database, _last_uri
+    if _mongo_client is not None and _last_uri == Config.MONGODB_URI:
+        return _mongo_client
+    # URI changed or first call — (re)connect
+    if _mongo_client is not None:
+        try: _mongo_client.close()
+        except Exception: pass
+    _mongo_client = None
+    _database = None
     if _mongo_client is None:
         try:
             logger.info("Initializing MongoDB Atlas connection...")
@@ -29,6 +38,7 @@ def get_client():
                 socketTimeoutMS=10000,
                 retryWrites=True
             )
+            _last_uri = Config.MONGODB_URI
         except Exception as e:
             logger.error(f"Failed to create MongoClient: {str(e)}")
             _mongo_client = None

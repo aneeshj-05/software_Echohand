@@ -6,6 +6,7 @@ from flask_cors import CORS
 from backend.config import Config
 from backend.utils.db import init_db, check_db_connection
 from backend.routes.auth_routes import auth_bp
+from backend.routes.asl_routes import asl_bp
 
 # Configure structured logging
 logging.basicConfig(
@@ -17,16 +18,9 @@ logger = logging.getLogger("echohand")
 
 def create_app():
     """Application factory for EchoHand Flask backend."""
-    # Resolve frontend1 directory path for direct preview if desired
-    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend1'))
-    
-    app = Flask(
-        __name__,
-        static_folder=frontend_dir,
-        static_url_path=''
-    )
-    
-    # Load configuration
+    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
+
+    app = Flask(__name__)
     app.config.from_object(Config)
 
     # Enable CORS for frontend integration
@@ -40,6 +34,14 @@ def create_app():
 
     # Register Blueprints
     app.register_blueprint(auth_bp)
+    app.register_blueprint(asl_bp)
+
+    # Initialize DB indexes on startup (non-fatal if Atlas unreachable)
+    with app.app_context():
+        try:
+            init_db()
+        except Exception as err:
+            logger.warning(f"MongoDB Atlas not reachable at startup: {err}")
 
     # Global Health Check Endpoint
     @app.route('/api/health', methods=['GET'])
@@ -77,17 +79,17 @@ def create_app():
             "error": "An internal server error occurred. Please try again later."
         }), 500
 
-    # Serve frontend files if accessed via Flask server
     @app.route('/')
     def index():
         return send_from_directory(frontend_dir, 'index.html')
 
     @app.route('/<path:filename>')
     def serve_frontend(filename):
-        target = os.path.join(frontend_dir, filename)
-        if os.path.isfile(target):
-            return send_from_directory(frontend_dir, filename)
-        return jsonify({"error": "Page not found"}), 404
+        for candidate in [filename, filename + '.html']:
+            target = os.path.join(frontend_dir, candidate)
+            if os.path.isfile(target):
+                return send_from_directory(frontend_dir, candidate)
+        return send_from_directory(frontend_dir, 'index.html')
 
     # Add security response headers
     @app.after_request

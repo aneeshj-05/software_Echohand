@@ -49,6 +49,8 @@
     const speakBtn = $('cameraSpeakBtn');
     if (speakBtn) speakBtn.hidden = false;
     window.EchoHandSpeech?.speak(word);
+    // Trigger emergency on HELP gesture
+    if (word.toLowerCase() === 'help') window.EchoHandEmergency?.onHelpGesture();
   }
 
   function renderSubtitle() {

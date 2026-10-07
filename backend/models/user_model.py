@@ -21,13 +21,24 @@ class UserModel:
         Creates a new user document structured for MongoDB Atlas insertion.
         """
         now = datetime.now(timezone.utc)
+        cleaned_contacts = []
+        for c in (emergency_contacts or []):
+            if isinstance(c, dict):
+                cleaned_contacts.append({
+                    "id": c.get("id", 1),
+                    "name": c.get("name", ""),
+                    "phone": c.get("phone", ""),
+                    "relation": c.get("relation", "Parent / Family"),
+                    "is_primary": c.get("is_primary", True),
+                    "fcm_tokens": [str(t).strip() for t in c.get("fcm_tokens", []) if str(t).strip()]
+                })
         return {
             "name": name.strip(),
             "email": email.strip().lower(),
             "phone": phone.strip() if phone else "",
             "password_hash": password_hash,
             "preferred_input": preferred_input or "both",
-            "emergency_contacts": emergency_contacts or [],
+            "emergency_contacts": cleaned_contacts,
             "created_at": now,
             "updated_at": now,
             "last_login": None,
@@ -64,12 +75,17 @@ class UserModel:
         raw_contacts = user_doc.get("emergency_contacts", [])
         formatted_contacts = []
         for c in raw_contacts:
+            tokens = c.get("fcm_tokens", [])
+            if not isinstance(tokens, list):
+                tokens = []
             formatted_contacts.append({
                 "id": c.get("id", 1),
                 "name": c.get("name", ""),
                 "phone": c.get("phone", ""),
                 "relation": c.get("relation", "Parent / Family"),
-                "isPrimary": c.get("is_primary", True)
+                "isPrimary": c.get("is_primary", True),
+                "fcm_tokens": tokens,
+                "fcmTokens": tokens
             })
 
         return {

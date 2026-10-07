@@ -7,6 +7,8 @@ from backend.config import Config
 from backend.utils.db import init_db, check_db_connection
 from backend.routes.auth_routes import auth_bp
 from backend.routes.asl_routes import asl_bp
+from backend.routes.emergency_routes import emergency_bp, notification_bp
+from backend.services.firebase_service import init_firebase
 
 # Configure structured logging
 logging.basicConfig(
@@ -35,13 +37,20 @@ def create_app():
     # Register Blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(asl_bp)
+    app.register_blueprint(emergency_bp)
+    app.register_blueprint(notification_bp)
 
-    # Initialize DB indexes on startup (non-fatal if Atlas unreachable)
+    # Initialize DB indexes and Firebase Admin on startup (non-fatal if services deferred)
     with app.app_context():
         try:
             init_db()
         except Exception as err:
             logger.warning(f"MongoDB Atlas not reachable at startup: {err}")
+
+        try:
+            init_firebase(app)
+        except Exception as err:
+            logger.warning(f"Firebase Admin initialization deferred: {err}")
 
     # Global Health Check Endpoint
     @app.route('/api/health', methods=['GET'])
@@ -83,12 +92,25 @@ def create_app():
     def index():
         return send_from_directory(frontend_dir, 'index.html')
 
+    @app.route('/firebase-messaging-sw.js')
+    def serve_sw():
+        target = os.path.join(frontend_dir, 'firebase-messaging-sw.js')
+        if os.path.isfile(target):
+            resp = send_from_directory(frontend_dir, 'firebase-messaging-sw.js', mimetype='application/javascript')
+            resp.headers['Service-Worker-Allowed'] = '/'
+            return resp
+        return jsonify({"error": "Service worker file not found"}), 404
+
     @app.route('/<path:filename>')
     def serve_frontend(filename):
         for candidate in [filename, filename + '.html']:
             target = os.path.join(frontend_dir, candidate)
             if os.path.isfile(target):
-                return send_from_directory(frontend_dir, candidate)
+                resp = send_from_directory(frontend_dir, candidate)
+                if 'firebase-messaging-sw.js' in candidate:
+                    resp.headers['Service-Worker-Allowed'] = '/'
+                    resp.headers['Content-Type'] = 'application/javascript'
+                return resp
         return send_from_directory(frontend_dir, 'index.html')
 
     # Add security response headers

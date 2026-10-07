@@ -3,6 +3,13 @@
 .env.*
 *.env
 
+# Firebase Credentials & Service Accounts
+*firebase*.json
+*service-account*.json
+*service_account*.json
+firebase-credentials.json
+
+
 # Virtual environment
 .venv/
 venv/

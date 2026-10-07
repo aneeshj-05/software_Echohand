@@ -1227,6 +1227,190 @@ body {
   50%       { opacity: 0.5; }
 }
 
+/* Emergency Status Box */
+.emergency-status-box {
+  margin: 0.75rem 1.2rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: rgba(218, 241, 222, 0.4);
+  border: 1px solid rgba(35, 83, 71, 0.15);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--eh-dark);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: all 0.25s ease;
+}
+
+.emergency-status-box.is-loading {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(14, 165, 233, 0.3);
+  color: #0369a1;
+}
+
+.emergency-status-box.is-success {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #15803d;
+}
+
+.emergency-status-box.is-error {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #b91c1c;
+}
+
+.emergency-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Contact Card with FCM state */
+.emergency-contact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: rgba(218, 241, 222, 0.45);
+  border: 1px solid rgba(35, 83, 71, 0.12);
+  transition: background var(--eh-transition), transform var(--eh-transition);
+}
+
+.emergency-contact-main {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.emergency-contact-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.primary-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  background: var(--eh-green);
+  color: var(--eh-mint);
+}
+
+.emergency-contact-meta {
+  font-size: 0.78rem;
+  color: #4a675e;
+}
+
+.contact-fcm-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  margin-top: 0.2rem;
+}
+
+.contact-fcm-pill.is-active {
+  background: rgba(34, 197, 94, 0.15);
+  color: #166534;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.contact-fcm-pill.is-inactive {
+  background: rgba(245, 158, 11, 0.15);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.emergency-contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(35, 83, 71, 0.08);
+}
+
+.btn-xs {
+  font-size: 0.74rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid rgba(35, 83, 71, 0.25);
+  color: var(--eh-green);
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.btn-xs:hover {
+  background: var(--eh-green);
+  color: #fff;
+  border-color: var(--eh-green);
+}
+
+.emergency-backup-wa {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: #128c7e;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Contact Invite Prompt Onboarding */
+.emergency-invite-prompt {
+  text-align: center;
+  padding: 1.2rem;
+  background: rgba(218, 241, 222, 0.5);
+  border-radius: 14px;
+  border: 1px solid rgba(35, 83, 71, 0.15);
+}
+
+.invite-banner-icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.emergency-invite-prompt h3 {
+  color: var(--eh-dark);
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+
+.emergency-invite-prompt p {
+  font-size: 0.85rem;
+  color: #43635a;
+  line-height: 1.45;
+  margin-bottom: 0.5rem;
+}
+
+.emergency-invite-success {
+  text-align: center;
+  padding: 1.2rem;
+  background: rgba(34, 197, 94, 0.12);
+  border-radius: 12px;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #166534;
+  font-size: 0.9rem;
+}
+
+
 
 
 @media (max-width: 760px) {

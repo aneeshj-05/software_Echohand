@@ -41,3 +41,14 @@ class Config:
     
     # Server port
     PORT = int(os.getenv('PORT', '5000'))
+
+    # Firebase Admin SDK & Web Push Configuration
+    FIREBASE_CREDENTIALS_PATH = (os.getenv('FIREBASE_CREDENTIALS_PATH') or os.getenv('GOOGLE_APPLICATION_CREDENTIALS') or '').strip()
+    FIREBASE_API_KEY = os.getenv('FIREBASE_API_KEY', '').strip()
+    FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID', '').strip()
+    FIREBASE_MESSAGING_SENDER_ID = os.getenv('FIREBASE_MESSAGING_SENDER_ID', '').strip()
+    FIREBASE_APP_ID = os.getenv('FIREBASE_APP_ID', '').strip()
+    FIREBASE_VAPID_KEY = os.getenv('FIREBASE_VAPID_KEY', '').strip()
+    FIREBASE_AUTH_DOMAIN = os.getenv('FIREBASE_AUTH_DOMAIN', f"{os.getenv('FIREBASE_PROJECT_ID', '').strip()}.firebaseapp.com" if os.getenv('FIREBASE_PROJECT_ID', '').strip() else '').strip()
+    FIREBASE_STORAGE_BUCKET = os.getenv('FIREBASE_STORAGE_BUCKET', f"{os.getenv('FIREBASE_PROJECT_ID', '').strip()}.appspot.com" if os.getenv('FIREBASE_PROJECT_ID', '').strip() else '').strip()
+

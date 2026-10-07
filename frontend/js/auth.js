@@ -46,7 +46,7 @@ function initPasswordToggles() {
 }
 
 /* ── Backend API Configuration ────────────────────────────────────────────── */
-const API_BASE = (window.location.protocol === 'file:' || (window.location.port && !window.location.port.includes('5000')))
+const API_BASE = (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')
   ? 'http://127.0.0.1:5000'
   : '';
 

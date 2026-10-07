@@ -205,15 +205,38 @@ class AuthService:
 
     @staticmethod
     def update_emergency_contacts(user_id: str, contacts: list):
-        """Updates emergency contacts list for a user."""
+        """Updates emergency contacts list for a user, preserving registered FCM tokens."""
         try:
             db = get_db()
             now = datetime.now(timezone.utc)
+            user_doc = db.users.find_one({"_id": ObjectId(user_id)})
+            existing_tokens_by_id = {}
+            if user_doc:
+                for c in user_doc.get("emergency_contacts", []):
+                    c_id = c.get("id")
+                    if c_id is not None:
+                        existing_tokens_by_id[c_id] = c.get("fcm_tokens", [])
+
+            cleaned_contacts = []
+            for idx, c in enumerate(contacts):
+                c_id = c.get("id", idx + 1)
+                tokens = c.get("fcm_tokens") or c.get("fcmTokens")
+                if tokens is None:
+                    tokens = existing_tokens_by_id.get(c_id, [])
+                cleaned_contacts.append({
+                    "id": c_id,
+                    "name": c.get("name", ""),
+                    "phone": c.get("phone", ""),
+                    "relation": c.get("relation", "Parent / Family"),
+                    "is_primary": bool(c.get("is_primary", c.get("isPrimary", idx == 0))),
+                    "fcm_tokens": tokens if isinstance(tokens, list) else []
+                })
+
             db.users.update_one(
                 {"_id": ObjectId(user_id)},
                 {
                     "$set": {
-                        "emergency_contacts": contacts,
+                        "emergency_contacts": cleaned_contacts,
                         "updated_at": now
                     }
                 }

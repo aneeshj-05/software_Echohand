@@ -178,3 +178,130 @@ These require a webcam and speakers — run after `python main.py`:
   (domain gap). The skeleton normalization reduces but does not eliminate this.
 - Requires good lighting and a clear upper-body view.
 - Only isolated word recognition — no grammar, no sentence structure.
+
+---
+
+## Firebase Cloud Messaging (FCM) Integration
+
+EchoHand replaces external manual messaging with automated, real-time push alerts via **Firebase Cloud Messaging**. When an emergency is triggered (via camera/glove HELP gesture or the emergency button), registered emergency contacts immediately receive an interactive push notification containing the user's live GPS coordinates and Google Maps link.
+
+### 1. Architecture Overview
+
+```
+[HELP Gesture / Panic Button]
+           ↓
+window.EchoHandEmergency.triggerEmergency()
+           ↓
+Browser Geolocation API (lat, lng)
+           ↓
+POST /api/emergency/alert (JWT Authenticated)
+           ↓
+Flask Backend & Firebase Admin SDK
+           ↓
+Firebase Cloud Messaging (Multicast Web Push)
+           ↓
+Service Worker (frontend/firebase-messaging-sw.js)
+           ↓
+High-Priority Emergency Notification on Contact Devices
+```
+
+### 2. Firebase Setup Requirements
+
+1. **Create a Firebase Project**:
+   - Go to the [Firebase Console](https://console.firebase.google.com/) and create a project (e.g. `echohand-emergency`).
+2. **Register Web App**:
+   - In Project Settings, under **General**, add a Web application (e.g. `EchoHand Web`).
+   - Copy the configuration object (`apiKey`, `projectId`, `messagingSenderId`, `appId`).
+3. **Generate Web Push (VAPID) Key**:
+   - In Project Settings, navigate to the **Cloud Messaging** tab.
+   - Under **Web configuration** > **Web Push certificates**, click **Generate key pair**.
+   - Copy the generated Public key (this is your `FIREBASE_VAPID_KEY`).
+4. **Generate Firebase Admin Service Account Key**:
+   - Navigate to **Project Settings** > **Service accounts**.
+   - Select **Python** and click **Generate new private key**.
+   - Save the downloaded JSON file **OUTSIDE** the project repository (e.g. `C:\Users\<user>\credentials\firebase-service-account.json` or `/etc/secrets/`).
+   - **SECURITY NOTE**: Never commit or expose this private key file.
+
+### 3. Environment Variable Configuration
+
+Add the following to `backend/.env` (or set in your environment):
+
+```bash
+# Path to Firebase Admin service-account credentials JSON (outside repository)
+FIREBASE_CREDENTIALS_PATH=C:\path\to\your\credentials\firebase-service-account.json
+# Alternatively, standard Google ADC:
+# GOOGLE_APPLICATION_CREDENTIALS=C:\path\to\your\credentials\firebase-service-account.json
+
+# Client-side Web Push configuration (safe for frontend exposure)
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
+FIREBASE_API_KEY=AIzaSy...
+FIREBASE_APP_ID=1:...:web:...
+FIREBASE_VAPID_KEY=BEl...
+```
+
+You can also update default fallback values in `frontend/js/firebase-config.js`.
+
+### 4. How Emergency Contacts Register Their Devices
+
+Emergency contacts can register their phone or computer browser to receive alerts without needing an EchoHand account password:
+
+1. **Self-Registration (Logged-in User on Contact Device)**:
+   - On `dashboard.html`, click the emergency panic button or open the emergency modal.
+   - Click **📱 Enable on This Device** next to the contact's name, or **🔔 Enable Emergency Notifications** in the modal footer.
+   - The browser prompts for notification permissions → click **Allow**.
+   - The device FCM token is securely registered with MongoDB Atlas for that contact.
+2. **One-Click Invite Link (Remote Family / Friends)**:
+   - On `dashboard.html` in the emergency modal, click **🔗 Share Invite Link** next to any contact.
+   - A cryptographically signed 7-day registration link is generated (e.g. `http://localhost:5000/dashboard.html?invite=<token>`).
+   - Send this link to your contact via WhatsApp, SMS, or email.
+   - When the contact opens the link, EchoHand shows an **Emergency Alert Device Registration** prompt.
+   - The contact clicks **Enable Emergency Notifications on This Device** and selects **Allow**.
+   - Their device is instantly linked to your account.
+
+### 5. Running the Backend Server
+
+Start the Flask server:
+
+```bash
+# Windows
+python backend/app.py
+
+# Or with batch script
+run_server.bat
+```
+
+Access the dashboard at `http://localhost:5000/dashboard.html`.
+
+### 6. How to Test Emergency Alerts
+
+1. **Manual Emergency Button**:
+   - Click the large red **EMERGENCY HELP** button on `dashboard.html`.
+   - The modal opens and status displays: `"Getting your location…"`, followed by `"Sending emergency alert via Firebase Cloud Messaging…"`.
+   - Your registered device immediately receives an audible notification with the title `🚨 EchoHand Emergency Alert`.
+2. **HELP Gesture Detection**:
+   - In camera or glove mode, sign **HELP** (or input simulated HELP signal).
+   - `window.EchoHandEmergency.onHelpGesture()` automatically triggers the alert workflow with 30-second cooldown protection against repeated bursts.
+   - Synthesized speech will announce: *"Help gesture detected. Sending emergency alert."*
+3. **GPS Coordinates & Google Maps**:
+   - Geolocation coordinates are captured and formatted as `https://www.google.com/maps?q=LAT,LNG`.
+   - Clicking the push notification directly opens the location in Google Maps.
+
+### 7. Automated Test Suite
+
+Run the FCM and authentication tests:
+
+```bash
+python -m unittest discover tests -v
+```
+
+All 29 tests run in isolated mock mode and do not consume real Firebase or SMS credits.
+
+### 8. Browser Push Notification Notes & Limitations
+
+- **HTTPS vs. Localhost**: Browsers only permit Push Notifications and Service Workers on `localhost` (`http://127.0.0.1`) and secure `https://` domains.
+- **Background Notifications**: The Service Worker (`frontend/firebase-messaging-sw.js`) receives messages even when EchoHand tabs are closed, as long as the browser is running.
+- **Mobile Browsers**:
+  - Android Chrome / Firefox support Web Push natively.
+  - iOS Safari (16.4+) requires the user to choose **"Add to Home Screen"** before allowing Web Push notifications.
+

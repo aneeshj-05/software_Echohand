@@ -133,6 +133,8 @@ def validate_signup_input(data: dict):
             c_phone = str(contact.get('phone', '')).strip()
             c_rel = sanitize_string(contact.get('relation', 'Parent / Family'))
             c_primary = bool(contact.get('isPrimary', idx == 0))
+            raw_tokens = contact.get('fcm_tokens', contact.get('fcmTokens', []))
+            c_tokens = [str(t).strip() for t in raw_tokens if isinstance(t, str) and str(t).strip()] if isinstance(raw_tokens, list) else []
 
             if not c_name:
                 errors[f'emergencyContact_{idx}_name'] = f"Contact {idx + 1} name is required."
@@ -144,7 +146,8 @@ def validate_signup_input(data: dict):
                 "name": c_name,
                 "phone": c_phone,
                 "relation": c_rel,
-                "is_primary": c_primary
+                "is_primary": c_primary,
+                "fcm_tokens": c_tokens
             })
     else:
         # Fallback to direct single fields: emergencyName, emergencyPhone, emergencyRelation
@@ -164,13 +167,39 @@ def validate_signup_input(data: dict):
                     "name": sanitize_string(str(em_name)),
                     "phone": str(em_phone).strip(),
                     "relation": sanitize_string(str(em_rel)),
-                    "is_primary": True
+                    "is_primary": True,
+                    "fcm_tokens": []
                 })
 
     cleaned['emergency_contacts'] = contacts_list
 
     is_valid = len(errors) == 0
     return is_valid, errors, cleaned
+
+
+def validate_coordinates(lat, lng):
+    """
+    Validates geographic coordinates (latitude and longitude).
+    Allows None / null / empty if GPS was unavailable.
+    Returns (is_valid: bool, cleaned_lat: float or None, cleaned_lng: float or None, error_msg: str or None)
+    """
+    if lat is None or lat == '' or lng is None or lng == '':
+        return True, None, None, None
+
+    try:
+        f_lat = float(lat)
+        f_lng = float(lng)
+    except (ValueError, TypeError):
+        return False, None, None, "Invalid coordinate format. Coordinates must be numeric."
+
+    if not (-90.0 <= f_lat <= 90.0):
+        return False, None, None, "Latitude must be between -90.0 and 90.0."
+
+    if not (-180.0 <= f_lng <= 180.0):
+        return False, None, None, "Longitude must be between -180.0 and 180.0."
+
+    return True, f_lat, f_lng, None
+
 
 
 def validate_login_input(data: dict):

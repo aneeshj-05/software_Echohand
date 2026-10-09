@@ -4,6 +4,10 @@
    Existing global style.css remains the base theme.
    ========================================================= */
 
+[hidden] {
+  display: none !important;
+}
+
 :root {
   --eh-dark: #0B2B26;
   --eh-deep: #051F20;

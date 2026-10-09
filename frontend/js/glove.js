@@ -12,18 +12,7 @@
 
   function classify(flex) {
     if (!flex) return null;
-    // Convert normalised 0-1 flex values back to ADC-equivalent counts so
-    // EchoHandRecognizer can apply its spike guard and centroid distances
-    // consistently regardless of whether readings came from the WebSocket
-    // or from the demo array.
-    const ADC_CEIL = window.EchoHandRecognizer?.adcCeil ?? 1000;
-    return window.EchoHandRecognizer?.classify({
-      thumb:  flex[0] * ADC_CEIL,
-      index:  flex[1] * ADC_CEIL,
-      middle: flex[2] * ADC_CEIL,
-      ring:   flex[3] * ADC_CEIL,
-      // little (flex[4]) deliberately excluded
-    }) ?? null;
+    return window.EchoHandRecognizer?.classify({ flex }) ?? null;
   }
 
   // ── Debounce: same gesture must appear N times in a row ──────────────────
@@ -58,7 +47,10 @@
     ids.forEach((f, i) => {
       const bar = $('sensor' + f);
       const val = $('sensor' + f + 'Val');
-      const pct = Math.round((flex[i] ?? 0) * 100);
+      let v = flex[i] ?? 0;
+      // Auto-scale 12-bit ADC (0..4095) down to 0..1 range if > 1.0
+      if (v > 1.0) v = v / 4095.0;
+      const pct = Math.min(100, Math.max(0, Math.round(v * 100)));
       if (bar) bar.style.width = pct + '%';
       if (val) val.textContent = pct + '%';
     });
@@ -82,13 +74,20 @@
   function showSensors(show) {
     const sensors = $('gloveSensors');
     const waiting = $('gloveWaitingState');
-    if (sensors) sensors.hidden = !show;
-    if (waiting) waiting.hidden = show;
+    if (sensors) {
+      sensors.hidden = !show;
+      sensors.style.display = show ? 'block' : 'none';
+    }
+    if (waiting) {
+      waiting.hidden = show;
+      waiting.style.display = show ? 'none' : 'flex';
+    }
   }
 
   // ── Process one incoming reading ─────────────────────────────────────────
   function processReading(data) {
     if (!data?.flex) return;
+    showSensors(true);
     updateBars(data.flex);
     const raw       = classify(data.flex);
     const committed = debounce(raw);
@@ -113,24 +112,57 @@
     };
 
     ws.onmessage = e => {
-      let data;
-      try { data = JSON.parse(e.data); } catch (_) { return; }
+      const raw = e.data;
+      console.log('[EchoHand WS raw frame]:', raw);
+      let data = null;
+      const ADC_CEIL = window.EchoHandRecognizer?.adcCeil ?? 1000;
 
-      // Support two ESP32 message formats:
-      // 1. { flex: [t,i,m,r,l] }  — pre-normalised 0-1 (existing format)
-      // 2. { thumb, index, middle, ring }  — raw ADC integers
-      if (data && !data.flex && data.thumb != null) {
-        const ADC_CEIL = window.EchoHandRecognizer?.adcCeil ?? 1000;
-        data = {
-          flex: [
-            data.thumb  / ADC_CEIL,
-            data.index  / ADC_CEIL,
-            data.middle / ADC_CEIL,
-            data.ring   / ADC_CEIL,
-            0,   // little finger absent — always 0
-          ],
-        };
+      // ── Format 1: JSON  { thumb, index, middle, ring }  (raw ADC ints) ──
+      // ── Format 2: JSON  { flex: [t,i,m,r,l] }           (0-1 normalised) ──
+      // ── Format 3: plain text  "t,i,m,r"  (same as ESP32 Serial output) ──
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.flex) {
+          // Already normalised array
+          data = parsed;
+        } else if (parsed && parsed.thumb != null) {
+          // Raw ADC JSON object
+          data = {
+            flex: [
+              (parsed.thumb  ?? 0) / ADC_CEIL,
+              (parsed.index  ?? 0) / ADC_CEIL,
+              (parsed.middle ?? 0) / ADC_CEIL,
+              (parsed.ring   ?? 0) / ADC_CEIL,
+              0, // little finger absent
+            ],
+          };
+        }
+      } catch (_) {
+        // Not JSON — try comma-separated plain text: "250,180,200,150"
+        // This is exactly what the ESP32 sends over Serial (and often WebSocket).
+        const parts = raw.trim().split(',').map(Number);
+        if (parts.length >= 4 && parts.every(v => !isNaN(v))) {
+          data = {
+            flex: [
+              parts[0] / ADC_CEIL,
+              parts[1] / ADC_CEIL,
+              parts[2] / ADC_CEIL,
+              parts[3] / ADC_CEIL,
+              0, // little finger absent
+            ],
+          };
+        } else {
+          // Truly unrecognised — log once so you can diagnose in DevTools
+          console.warn('[EchoHand] Unrecognised WS frame (first 80 chars):', raw.slice(0, 80));
+          return;
+        }
       }
+
+      if (!data) return;
+
+      // Debug: uncomment the next line to log every frame in the browser console
+      // console.debug('[EchoHand] flex:', data.flex.map(v => (v * ADC_CEIL).toFixed(0)).join(','));
+
       processReading(data);
     };
 
@@ -146,10 +178,10 @@
   // flex values are the centroid means from gesture_dataset.csv, scaled to
   // 0-1 by dividing by ADC_CEIL (1000).  Little finger is always 0.
   const DEMO_READINGS = [
-    { label: 'THANK YOU', flex: [0.351, 0.278, 0.283, 0.161, 0.000] },
+    { label: 'THANK YOU', flex: [0.338, 0.228, 0.230, 0.163, 0.000] },
     { label: 'HELLO',     flex: [0.162, 0.207, 0.178, 0.166, 0.000] },
     { label: 'YES',       flex: [0.249, 0.213, 0.203, 0.136, 0.000] },
-    { label: 'NO',        flex: [0.174, 0.209, 0.193, 0.169, 0.000] },
+    { label: 'NO',        flex: [0.148, 0.210, 0.194, 0.168, 0.000] },
     { label: 'HELP',      flex: [0.207, 0.201, 0.216, 0.145, 0.000] },
     { label: 'SORRY',     flex: [0.274, 0.191, 0.159, 0.161, 0.000] },
   ];
@@ -182,16 +214,32 @@
   document.addEventListener('DOMContentLoaded', () => {
     $('connectGloveBtn')?.addEventListener('click', () => {
       const raw = prompt(
-        'Enter ESP32 IP address or IP:port (e.g. 192.168.1.42 or 192.168.1.42:81).\nLeave blank for Demo mode.',
+        'Enter ESP32 IP address (e.g. 192.168.1.42)\n' +
+        'Optional port: 192.168.1.42:81\n' +
+        'Leave blank for Demo mode.',
         ''
       );
       if (raw && raw.trim()) {
         const addr = raw.trim();
-        // If the user supplied a port already (host:port) use as-is;
-        // otherwise default to port 81 which is the EchoHand ESP32 default.
-        const url = addr.includes(':') && !addr.startsWith('[') // IPv6 check
-          ? `ws://${addr}/ws`
-          : `ws://${addr}:81/ws`;
+        // Build WebSocket URL.
+        // Most ESP32 arduinoWebSockets setups serve at ws://ip:port (root),
+        // NOT at ws://ip:port/ws.  We therefore connect to root by default.
+        // If your firmware uses a specific path, enter it in the prompt
+        // (e.g. 192.168.1.42:81/ws).
+        let url;
+        if (addr.startsWith('ws://') || addr.startsWith('wss://')) {
+          url = addr; // user gave full URL
+        } else if (addr.includes('/')) {
+          // user gave   ip:port/path   — just prepend scheme
+          url = `ws://${addr}`;
+        } else if (addr.includes(':')) {
+          // user gave   ip:port   — no path, connect to root
+          url = `ws://${addr}`;
+        } else {
+          // bare IP — default to port 81, root path
+          url = `ws://${addr}:81`;
+        }
+        console.info('[EchoHand] Connecting to', url);
         connectWS(url);
       } else {
         runDemo();

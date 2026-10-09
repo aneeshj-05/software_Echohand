@@ -24,32 +24,36 @@
   'use strict';
 
   // ADC normalisation ceiling.
-  // The actual populated range in the dataset is 0-899; we use 1000 as a
-  // round ceiling so normalised values stay stable and easy to reason about.
+  // The actual populated range in the dataset tops out around 656.
+  // We use 1000 as a round ceiling for stable normalised values.
   const ADC_CEIL = 1000;
 
-  // Readings at or above this raw value are treated as noise.
-  // 4095 = ADC saturation (12-bit all-ones).
-  const SPIKE_RAW  = 4000;
-  const SPIKE_HIGH = ADC_CEIL * 1.5;   // 1500 — catches mid-range bursts
+  // Any single sensor reading strictly over 4095 (disconnections/float) is discarded.
+  const SPIKE_THRESHOLD = 4096;
 
-  // Dataset-derived centroids [thumb_norm, index_norm, middle_norm, ring_norm]
-  // Source: gesture_dataset.csv
-  // Method: per-gesture mean of spike-filtered samples, divided by ADC_CEIL.
-  // Rows labelled UNKNOWN are excluded.  Little-finger column not used.
-  const CENTROIDS = {
+  // 1) RAW ADC Centroids (when input is raw ADC / 1000)
+  const RAW_CENTROIDS = {
     'HELLO':     [0.162, 0.207, 0.178, 0.166],
     'HELP':      [0.207, 0.201, 0.216, 0.145],
-    'NO':        [0.174, 0.209, 0.193, 0.169],
+    'NO':        [0.148, 0.210, 0.194, 0.168],
     'SORRY':     [0.274, 0.191, 0.159, 0.161],
-    'THANK YOU': [0.351, 0.278, 0.283, 0.161],
+    'THANK YOU': [0.338, 0.228, 0.230, 0.163],
     'YES':       [0.249, 0.213, 0.203, 0.136],
   };
 
+  // 2) ESP32 Calibrated Flex Centroids (for 0.0..1.0 flex array from ESP32 normalizeSensor)
+  const CALIBRATED_CENTROIDS = {
+    'HELLO':     [0.772, 0.653, 0.585, 0.797],
+    'HELP':      [0.707, 0.704, 0.513, 0.815],
+    'NO':        [0.796, 0.658, 0.571, 0.467],
+    'SORRY':     [0.607, 0.869, 0.808, 0.844],
+    'THANK YOU': [0.510, 0.511, 0.313, 0.642],
+    'YES':       [0.644, 0.626, 0.390, 0.904],
+  };
+
   // Maximum Euclidean distance for a confident match.
-  // 0.20 = ~200 ADC counts average deviation per finger.
-  // Increase to accept weaker matches; decrease for stricter classification.
-  const MAX_DIST = 0.20;
+  const MAX_DIST_RAW = 0.35;
+  const MAX_DIST_CAL = 0.45;
 
   function dist4(a, b) {
     let s = 0;
@@ -61,19 +65,40 @@
   }
 
   // classify accepts:
-  //   { thumb, index, middle, ring }  -- raw ADC object (preferred)
-  //   { flex: [t, i, m, r, l] }      -- existing glove.js wire format (0-1)
+  //   { flex: [t, i, m, r, l] }      -- ESP32 calibrated 0.0..1.0 array or raw
+  //   { thumb, index, middle, ring }  -- raw ADC object
   //   [t, i, m, r]                   -- raw ADC array
   // Returns a label string or null.
   function classify(rawObj) {
-    let t, idx, m, r;
-
     if (!rawObj) return null;
 
+    // Check if input is ESP32 0.0..1.0 calibrated flex array
+    if (rawObj.flex != null && Array.isArray(rawObj.flex)) {
+      const f = rawObj.flex;
+      const maxVal = Math.max(...f.slice(0, 4));
+      
+      // If values are within 0.0 .. 1.0 (calibrated ESP32 output), use CALIBRATED_CENTROIDS
+      if (maxVal <= 1.0) {
+        const norm = [f[0] ?? 0, f[1] ?? 0, f[2] ?? 0, f[3] ?? 0];
+        let bestLabel = null;
+        let bestDist  = Infinity;
+
+        for (const [label, centroid] of Object.entries(CALIBRATED_CENTROIDS)) {
+          const d = dist4(norm, centroid);
+          if (d < bestDist) {
+            bestDist  = d;
+            bestLabel = label;
+          }
+        }
+        return bestDist <= MAX_DIST_CAL ? bestLabel : null;
+      }
+    }
+
+    // Otherwise process as RAW ADC inputs
+    let t, idx, m, r;
     if (Array.isArray(rawObj)) {
       [t, idx, m, r] = rawObj;
     } else if (rawObj.flex != null) {
-      // flex is already 0-1 normalised -- scale back to ADC-equivalent
       const f = rawObj.flex;
       t   = (f[0] ?? 0) * ADC_CEIL;
       idx = (f[1] ?? 0) * ADC_CEIL;
@@ -86,19 +111,27 @@
       r   = rawObj.ring   ?? 0;
     }
 
-    // Spike / invalid guard
-    if ([t, idx, m, r].some(v => v >= SPIKE_RAW || v >= SPIKE_HIGH || isNaN(v))) {
+    // Auto-detect 12-bit ESP32 ADC range (0..4095) vs 10-bit / dataset scale (0..1000)
+    const maxVal = Math.max(t, idx, m, r);
+    let scaleFactor = 1.0;
+    if (maxVal > ADC_CEIL) {
+      scaleFactor = ADC_CEIL / 4095.0;
+    }
+
+    t   *= scaleFactor;
+    idx *= scaleFactor;
+    m   *= scaleFactor;
+    r   *= scaleFactor;
+
+    if ([t, idx, m, r].some(v => isNaN(v) || v < 0 || v > SPIKE_THRESHOLD)) {
       return null;
     }
 
-    // Normalise
     const norm = [t / ADC_CEIL, idx / ADC_CEIL, m / ADC_CEIL, r / ADC_CEIL];
-
-    // Nearest centroid
     let bestLabel = null;
     let bestDist  = Infinity;
 
-    for (const [label, centroid] of Object.entries(CENTROIDS)) {
+    for (const [label, centroid] of Object.entries(RAW_CENTROIDS)) {
       const d = dist4(norm, centroid);
       if (d < bestDist) {
         bestDist  = d;
@@ -106,7 +139,7 @@
       }
     }
 
-    return bestDist <= MAX_DIST ? bestLabel : null;
+    return bestDist <= MAX_DIST_RAW ? bestLabel : null;
   }
 
   window.EchoHandRecognizer = {

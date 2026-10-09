@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="EchoHand is a calm, accessible platform bridging American Sign Language through camera vision and smart sensor gloves into real-time speech and text.">
+  <meta name="keywords"
+    content="EchoHand, ASL, American Sign Language, Accessibility, Assistive Technology, Speech, Smart Glove">
+  <meta name="author" content="EchoHand">
+  <title>EchoHand — Turning signs into a voice that can be heard</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230B2B26' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0'/><path d='M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2'/><path d='M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8'/><path d='M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15'/></svg>">
+
+  <!-- Core & Landing Styles (70% Light Mint #DAF1DE) -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/landing.css">
+</head>
+
+<body>
+
+  <!-- ========================================================================
+       CLEAN, MINIMAL NAVBAR
+       ======================================================================== -->
+  <header class="site-header" id="siteHeader">
+    <div class="container nav-container">
+
+      <!-- Brand Logo -->
+      <a href="index.html" class="brand-logo" aria-label="EchoHand Home">
+        <span class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+            <path
+              d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+          </svg>
+        </span>
+        <span>EchoHand</span>
+      </a>
+
+      <!-- Clean Navigation Links -->
+      <nav aria-label="Main Navigation">
+        <ul class="nav-menu">
+          <li><a href="#" class="nav-link">Home</a></li>
+          <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+          <li><a href="learn.html" class="nav-link">Learn ASL</a></li>
+          <li><a href="#emergency" class="nav-link">Emergency</a></li>
+        </ul>
+      </nav>
+
+      <!-- Minimal Actions -->
+      <div class="nav-actions">
+        <a href="login.html" class="btn btn-secondary btn-sm">Sign In</a>
+        <a href="dashboard.html" class="btn btn-primary btn-sm">Try EchoHand</a>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Open Navigation Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       HERO SECTION (SPACIOUS, HUMAN-CENTERED, SERENE)
+       ======================================================================== -->
+  <main>
+    <section class="hero-section">
+      <div class="container hero-grid">
+
+        <!-- Left Side: Elegant Headline & Human Message -->
+        <div class="hero-content">
+          <span class="hero-subtle-label">ASL • Accessibility • Communication</span>
+
+          <h1 class="hero-heading">
+            EchoHand<br>
+          </h1>
+          <h2>
+            Where Silent Gestures Speak, Safety Listens!
+          </h2>
+
+          <p class="hero-description" style="font-family: 'Outfit', sans-serif;">
+            EchoHand helps bridge communication through American Sign Language, transforming gestures into text and
+            speech through a camera or a smart sensor glove.
+          </p>
+
+          <div class="hero-buttons">
+            <a href="dashboard.html" class="btn btn-primary btn-lg">Try EchoHand</a>
+            <a href="#how-it-works" class="btn btn-secondary btn-lg">Learn How It Works</a>
+          </div>
+        </div>
+
+        <!-- Right Side: Cycling gesture card -->
+        <div class="hero-visual-wrapper">
+          <div class="minimal-gesture-card">
+
+            <!-- Word selector tabs -->
+            <div class="gesture-tabs" id="gestureTabs">
+              <button class="gesture-tab is-active" data-word="YES" data-conf="91">YES</button>
+              <button class="gesture-tab" data-word="NO" data-conf="88">NO</button>
+              <button class="gesture-tab" data-word="DRINK" data-conf="76">DRINK</button>
+              <button class="gesture-tab" data-word="DEAF" data-conf="83">DEAF</button>
+              <button class="gesture-tab" data-word="NOW" data-conf="79">NOW</button>
+            </div>
+
+            <!-- Fixed-height view container: gesture view ↔ sensor view -->
+            <div class="card-view-container">
+
+              <!-- VIEW A: gesture (default visible) -->
+              <div class="card-view card-view--gesture is-active" id="viewGesture">
+                <div class="hand-visual-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
+                    <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
+                    <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
+                    <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+                  </svg>
+                </div>
+                <div class="gesture-info-meta">
+                  <span class="gesture-label-text" id="heroGestureWord">YES</span>
+                  <span class="gesture-confidence-text" id="heroGestureConf">91% confidence</span>
+                </div>
+                <div class="gesture-speech-flow">
+                  <span>Gesture</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline>
+                  </svg>
+                  <span>Speech</span>
+                </div>
+              </div>
+
+              <!-- VIEW B: sensor data (hidden by default) -->
+              <div class="card-view card-view--sensor" id="viewSensor">
+                <p class="finger-chart-title">Finger Sensor Data</p>
+                <div class="finger-chart">
+                  <div class="finger-row"><span class="finger-label">Thumb</span><div class="finger-bar-track"><div class="finger-bar" id="fbarThumb" style="width:85%"></div></div><span class="finger-val" id="fvalThumb">85%</span></div>
+                  <div class="finger-row"><span class="finger-label">Index</span><div class="finger-bar-track"><div class="finger-bar" id="fbarIndex" style="width:90%"></div></div><span class="finger-val" id="fvalIndex">90%</span></div>
+                  <div class="finger-row"><span class="finger-label">Middle</span><div class="finger-bar-track"><div class="finger-bar" id="fbarMiddle" style="width:88%"></div></div><span class="finger-val" id="fvalMiddle">88%</span></div>
+                  <div class="finger-row"><span class="finger-label">Ring</span><div class="finger-bar-track"><div class="finger-bar" id="fbarRing" style="width:20%"></div></div><span class="finger-val" id="fvalRing">20%</span></div>
+                  <div class="finger-row"><span class="finger-label">Little</span><div class="finger-bar-track"><div class="finger-bar" id="fbarLittle" style="width:15%"></div></div><span class="finger-val" id="fvalLittle">15%</span></div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Bottom action row: toggle + listen -->
+            <div class="card-action-row">
+              <button class="card-view-toggle" id="cardViewToggle" type="button">Sensor Data</button>
+              <button class="listen-sample-btn" id="heroListenBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+                Listen
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================
+       TWO WAYS TO COMMUNICATE (CAMERA + SMART GLOVE)
+       ======================================================================== -->
+    <section class="two-ways-section" id="two-ways">
+      <div class="container">
+
+        <div class="section-header">
+          <span class="subtle-badge">Input Methods</span>
+          <h2 class="section-title">Two ways to communicate</h2>
+          <p class="section-subtitle">
+            Whether you are sitting in front of your device or on the move, EchoHand adapts effortlessly to your
+            environment.
+          </p>
+        </div>
+
+        <div class="ways-container">
+
+          <!-- Way 1: Camera -->
+          <div class="way-card">
+            <div class="way-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </div>
+            <h3 class="way-name">CAMERA</h3>
+            <p class="way-tagline">See the sign</p>
+            <p class="way-description">
+              Uses standard webcam computer vision to recognize hand shapes in real time with no wearables required.
+            </p>
+          </div>
+
+          <!-- Subtle Center Plus Connector -->
+          <div class="ways-plus-connector" aria-hidden="true">+</div>
+
+          <!-- Way 2: Smart Glove -->
+          <div class="way-card">
+            <div class="way-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+                <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+                <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+                <path
+                  d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+              </svg>
+            </div>
+            <h3 class="way-name">SMART GLOVE</h3>
+            <p class="way-tagline">Feel the gesture</p>
+            <p class="way-description">
+              Lightweight wearable glove with flex sensors and ESP32 to measure finger bends anywhere, even on the go.
+            </p>
+          </div>
+
+        </div>
+
+        <p class="ways-footer-note">
+          Both connect seamlessly to EchoHand, delivering identical clear text and speech output.
+        </p>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================
+       HOW IT WORKS (SIMPLE 4 STEPS)
+       ======================================================================== -->
+    <section class="how-it-works-section" id="how-it-works">
+      <div class="container">
+
+        <div class="section-header">
+          <span class="subtle-badge">Simplicity</span>
+          <h2 class="section-title">How it works</h2>
+          <p class="section-subtitle">
+            A natural, seamless transition from physical movement to spoken word in four simple steps.
+          </p>
+        </div>
+
+        <div class="steps-grid">
+
+          <div class="step-item">
+            <span class="step-num">01</span>
+            <h3 class="step-title">Make a sign</h3>
+            <p class="step-desc">
+              Perform an American Sign Language gesture in front of your camera or while wearing the glove.
+            </p>
+          </div>
+
+          <div class="step-item">
+            <span class="step-num">02</span>
+            <h3 class="step-title">EchoHand detects it</h3>
+            <p class="step-desc">
+              Intelligent recognition instantly analyzes the hand shape and verifies the sign with high precision.
+            </p>
+          </div>
+
+          <div class="step-item">
+            <span class="step-num">03</span>
+            <h3 class="step-title">Your gesture becomes text</h3>
+            <p class="step-desc">
+              The recognized gesture is translated immediately into clear, readable words on screen.
+            </p>
+          </div>
+
+          <div class="step-item">
+            <span class="step-num">04</span>
+            <h3 class="step-title">EchoHand speaks it aloud</h3>
+            <p class="step-desc">
+              Natural speech synthesis vocalizes your words so the listener hears your communication effortlessly.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================
+       FEATURES SECTION (SIMPLE, ELEGANT CARDS)
+       ======================================================================== -->
+    <section class="features-section" id="features">
+      <div class="container">
+
+        <div class="section-header">
+          <span class="subtle-badge">Capabilities</span>
+          <h2 class="section-title">Thoughtfully designed features</h2>
+          <p class="section-subtitle">
+            Essential tools crafted to empower inclusive, everyday communication.
+          </p>
+        </div>
+
+        <div class="features-grid">
+
+          <!-- Card 1 -->
+          <div class="feature-card">
+            <div class="feature-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </div>
+            <h3 class="feature-card-title">Camera Translation</h3>
+            <p class="feature-card-desc">
+              Real-time ASL gesture recognition directly through your browser using everyday webcam vision.
+            </p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="feature-card">
+            <div class="feature-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+                <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+                <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+                <path
+                  d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+              </svg>
+            </div>
+            <h3 class="feature-card-title">Smart Glove</h3>
+            <p class="feature-card-desc">
+              Flex sensors + ESP32 provide an additional input method that works at any angle or lighting condition.
+            </p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="feature-card">
+            <div class="feature-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              </svg>
+            </div>
+            <h3 class="feature-card-title">Text to Speech</h3>
+            <p class="feature-card-desc">
+              Detected gestures are converted into clear spoken audio using natural browser voice synthesis.
+            </p>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="feature-card">
+            <div class="feature-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+              </svg>
+            </div>
+            <h3 class="feature-card-title">Learn ASL</h3>
+            <p class="feature-card-desc">
+              Practice and explore supported gestures with gentle guided references and interactive feedback.
+            </p>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="feature-card">
+            <div class="feature-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+            </div>
+            <h3 class="feature-card-title">Emergency Help</h3>
+            <p class="feature-card-desc">
+              The HELP gesture can initiate an emergency assistance flow with location sharing and alert options.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================
+       EMERGENCY SECTION (CALM, MEANINGFUL, PEACEFUL)
+       ======================================================================== -->
+    <section class="emergency-section" id="emergency">
+      <div class="container">
+
+        <div class="emergency-calm-box">
+
+          <div class="emergency-left">
+
+            <h2 class="emergency-heading">
+              Communication when it matters most.
+            </h2>
+
+            <p class="emergency-text">
+              EchoHand can recognize a designated HELP gesture and begin an emergency assistance flow, including
+              location sharing and alert options.
+            </p>
+
+            <div>
+              <button class="btn btn-secondary btn-sm" id="calmEmergencyDemoBtn">
+                Preview Assistance Flow
+              </button>
+            </div>
+          </div>
+
+          <!-- Subtle Visual: HELP → Location → Emergency Contact -->
+          <div class="emergency-flow-visual">
+            <div class="flow-step-pill">
+              <span class="flow-step-icon warm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+                  <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+                  <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+                  <path
+                    d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+                </svg>
+              </span>
+              <span>HELP Gesture Recognized</span>
+            </div>
+
+            <div class="flow-arrow-down" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="19 12 12 19 5 12"></polyline>
+              </svg>
+            </div>
+
+            <div class="flow-step-pill">
+              <span class="flow-step-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </span>
+              <span>Location Shared</span>
+            </div>
+
+            <div class="flow-arrow-down" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="19 12 12 19 5 12"></polyline>
+              </svg>
+            </div>
+
+            <div class="flow-step-pill">
+              <span class="flow-step-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                  </path>
+                </svg>
+              </span>
+              <span>Emergency Contact Notified</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================
+       FINAL CTA SECTION
+       ======================================================================== -->
+    <section class="final-cta-section">
+      <div class="container">
+
+        <div class="cta-inner-box">
+          <h2 class="cta-heading">Let your hands be heard.</h2>
+          <p class="cta-subtitle">
+            Explore EchoHand and experience a more accessible way to communicate.
+          </p>
+          <div style="margin-top: 0.5rem;">
+            <a href="dashboard.html" class="btn btn-primary btn-lg">Try EchoHand</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       CALM EMERGENCY ASSISTANCE MODAL
+       ======================================================================== -->
+  <div class="modal-overlay" id="emergencyModalOverlay" role="dialog" aria-modal="true"
+    aria-labelledby="modalAlertTitle">
+    <div class="emergency-modal">
+
+      <div class="modal-header-calm">
+        <div class="modal-header-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+        </div>
+        <h3 class="modal-title" id="modalAlertTitle">Emergency Assistance Flow</h3>
+      </div>
+
+      <div class="modal-body">
+        <p>
+          When the HELP gesture is recognized, EchoHand can obtain your approximate location to create a direct Google
+          Maps link for your trusted contacts.
+        </p>
+
+        <div class="location-box-calm" id="modalCoordsDisplay">
+          📍 Locating approximate coordinates...
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary btn-sm" id="emergencyCancelBtn">Close</button>
+        <button class="btn btn-primary btn-sm" id="emergencyDispatchBtn">Simulate Alert Share</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       COMPACT CALM FOOTER
+       ======================================================================== -->
+  <footer class="site-footer site-footer--slim">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 EchoHand. All rights reserved.</p>
+        <p>Designed for inclusive, accessible communication.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+  <script src="js/landing.js"></script>
+</body>
+
+</html>

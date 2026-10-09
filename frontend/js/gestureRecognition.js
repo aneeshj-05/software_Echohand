@@ -51,9 +51,24 @@
     'YES':       [0.644, 0.626, 0.390, 0.904],
   };
 
-  // Maximum Euclidean distance for a confident match.
-  const MAX_DIST_RAW = 0.35;
-  const MAX_DIST_CAL = 0.45;
+  // Per-gesture matching thresholds (gives HELP a wide 0..100% matching tolerance)
+  const GESTURE_MAX_DIST_CAL = {
+    'HELP':      0.60, // Wide tolerance so HELP matches reliably across 0 to 100% flex
+    'HELLO':     0.40,
+    'NO':        0.40,
+    'SORRY':     0.40,
+    'THANK YOU': 0.40,
+    'YES':       0.40,
+  };
+
+  const GESTURE_MAX_DIST_RAW = {
+    'HELP':      0.50,
+    'HELLO':     0.35,
+    'NO':        0.35,
+    'SORRY':     0.35,
+    'THANK YOU': 0.35,
+    'YES':       0.35,
+  };
 
   function dist4(a, b) {
     let s = 0;
@@ -85,12 +100,13 @@
 
         for (const [label, centroid] of Object.entries(CALIBRATED_CENTROIDS)) {
           const d = dist4(norm, centroid);
-          if (d < bestDist) {
+          const maxAllowed = GESTURE_MAX_DIST_CAL[label] ?? 0.45;
+          if (d <= maxAllowed && d < bestDist) {
             bestDist  = d;
             bestLabel = label;
           }
         }
-        return bestDist <= MAX_DIST_CAL ? bestLabel : null;
+        return bestLabel;
       }
     }
 
@@ -133,20 +149,21 @@
 
     for (const [label, centroid] of Object.entries(RAW_CENTROIDS)) {
       const d = dist4(norm, centroid);
-      if (d < bestDist) {
+      const maxAllowed = GESTURE_MAX_DIST_RAW[label] ?? 0.35;
+      if (d <= maxAllowed && d < bestDist) {
         bestDist  = d;
         bestLabel = label;
       }
     }
 
-    return bestDist <= MAX_DIST_RAW ? bestLabel : null;
+    return bestLabel;
   }
 
   window.EchoHandRecognizer = {
     classify,
-    get maxDist()   { return MAX_DIST;   },
-    get centroids() { return CENTROIDS;  },
-    get adcCeil()   { return ADC_CEIL;   },
+    get rawCentroids()        { return RAW_CENTROIDS;        },
+    get calibratedCentroids() { return CALIBRATED_CENTROIDS; },
+    get adcCeil()             { return ADC_CEIL;             },
   };
 
 })();

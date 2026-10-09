@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/dashboard.css">
 </head>
+
 <body>
 
   <!-- HEADER -->
@@ -16,12 +18,13 @@
     <div class="container nav-container">
       <a href="index.html" class="brand-logo" aria-label="EchoHand Home">
         <span class="brand-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
-            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
-            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
-            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+            <path
+              d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
           </svg>
         </span>
         <span>EchoHand</span>
@@ -32,11 +35,11 @@
         <span class="db-user-name" id="dbUserName">Guest</span>
         <button class="btn btn-secondary btn-sm" id="dbLogoutBtn">Sign Out</button>
         <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Open Navigation Menu">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
         </button>
       </div>
@@ -72,13 +75,13 @@
       <!-- ONLY TWO MAIN INPUT CHOICES -->
       <section class="input-choice-grid" aria-label="Translation input methods">
 
-        <button class="input-choice-card" id="openCameraBtn" type="button"
-                aria-haspopup="dialog" aria-controls="cameraModal">
+        <button class="input-choice-card" id="openCameraBtn" type="button" aria-haspopup="dialog"
+          aria-controls="cameraModal">
           <span class="input-choice-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                 stroke-linecap="round" stroke-linejoin="round">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-              <circle cx="12" cy="13" r="4"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
             </svg>
           </span>
           <span class="input-choice-content">
@@ -88,15 +91,16 @@
           </span>
         </button>
 
-        <button class="input-choice-card" id="openGloveBtn" type="button"
-                aria-haspopup="dialog" aria-controls="gloveModal">
+        <button class="input-choice-card" id="openGloveBtn" type="button" aria-haspopup="dialog"
+          aria-controls="gloveModal">
           <span class="input-choice-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                 stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
-              <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
-              <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
-              <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+              <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+              <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+              <path
+                d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
             </svg>
           </span>
           <span class="input-choice-content">
@@ -112,12 +116,13 @@
       <div class="emergency-panic-wrapper">
         <button class="emergency-panic-btn" id="emergencyPanicBtn" type="button">
           <span class="emergency-panic-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
-              <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
-              <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
-              <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+              <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+              <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+              <path
+                d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
             </svg>
           </span>
           <span class="emergency-panic-text">
@@ -141,35 +146,32 @@
           </div>
 
           <div class="scroll-controls" aria-label="ASL card navigation">
-            <button type="button" class="scroll-arrow" id="aslScrollPrev"
-                    aria-label="Scroll ASL cards left">←</button>
-            <button type="button" class="scroll-arrow" id="aslScrollNext"
-                    aria-label="Scroll ASL cards right">→</button>
+            <button type="button" class="scroll-arrow" id="aslScrollPrev" aria-label="Scroll ASL cards left">←</button>
+            <button type="button" class="scroll-arrow" id="aslScrollNext" aria-label="Scroll ASL cards right">→</button>
           </div>
         </div>
 
-        <div class="asl-card-track" id="aslCardTrack" tabindex="0"
-             aria-label="Scrollable ASL gesture cards">
+        <div class="asl-card-track" id="aslCardTrack" tabindex="0" aria-label="Scrollable ASL gesture cards">
 
           <!-- HELLO: open hand raised near forehead, palm out -->
-          <button class="asl-card" type="button" data-gesture="HELLO"
-                  aria-expanded="false" aria-controls="aslExpandPanel">
+          <button class="asl-card" type="button" data-gesture="HELLO" aria-expanded="false"
+            aria-controls="aslExpandPanel">
             <span class="asl-card-image" aria-hidden="true">
               <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <!-- palm -->
-                <rect x="22" y="38" width="36" height="38" rx="10" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="22" y="38" width="36" height="38" rx="10" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- thumb -->
-                <rect x="10" y="44" width="14" height="9" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="10" y="44" width="14" height="9" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- index -->
-                <rect x="24" y="16" width="9" height="26" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="24" y="16" width="9" height="26" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- middle -->
-                <rect x="35" y="12" width="9" height="28" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="35" y="12" width="9" height="28" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- ring -->
-                <rect x="46" y="16" width="9" height="26" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="46" y="16" width="9" height="26" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- little -->
-                <rect x="57" y="22" width="8" height="20" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="57" y="22" width="8" height="20" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- motion arc -->
-                <path d="M58 20 Q72 10 68 28" stroke="#235347" stroke-width="1.2" stroke-dasharray="3 2" fill="none"/>
+                <path d="M58 20 Q72 10 68 28" stroke="#235347" stroke-width="1.2" stroke-dasharray="3 2" fill="none" />
               </svg>
             </span>
             <span class="asl-card-name">HELLO</span>
@@ -177,18 +179,19 @@
           </button>
 
           <!-- THANK YOU: flat hand moves forward from chin -->
-          <button class="asl-card" type="button" data-gesture="THANK YOU"
-                  aria-expanded="false" aria-controls="aslExpandPanel">
+          <button class="asl-card" type="button" data-gesture="THANK YOU" aria-expanded="false"
+            aria-controls="aslExpandPanel">
             <span class="asl-card-image" aria-hidden="true">
               <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="20" y="36" width="40" height="34" rx="10" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-                <rect x="8" y="42" width="14" height="9" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-                <rect x="22" y="18" width="9" height="22" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-                <rect x="33" y="15" width="9" height="24" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-                <rect x="44" y="18" width="9" height="22" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-                <rect x="55" y="22" width="8" height="18" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="20" y="36" width="40" height="34" rx="10" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+                <rect x="8" y="42" width="14" height="9" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+                <rect x="22" y="18" width="9" height="22" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+                <rect x="33" y="15" width="9" height="24" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+                <rect x="44" y="18" width="9" height="22" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+                <rect x="55" y="22" width="8" height="18" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- forward arrow -->
-                <path d="M40 78 L40 88 M36 84 L40 88 L44 84" stroke="#235347" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M40 78 L40 88 M36 84 L40 88 L44 84" stroke="#235347" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
               </svg>
             </span>
             <span class="asl-card-name">THANK YOU</span>
@@ -196,23 +199,25 @@
           </button>
 
           <!-- YES: fist nodding up and down -->
-          <button class="asl-card" type="button" data-gesture="YES"
-                  aria-expanded="false" aria-controls="aslExpandPanel">
+          <button class="asl-card" type="button" data-gesture="YES" aria-expanded="false"
+            aria-controls="aslExpandPanel">
             <span class="asl-card-image" aria-hidden="true">
               <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <!-- fist body -->
-                <rect x="22" y="30" width="36" height="40" rx="12" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="22" y="30" width="36" height="40" rx="12" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- curled finger tops -->
-                <rect x="24" y="22" width="8" height="12" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-                <rect x="34" y="20" width="8" height="13" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-                <rect x="44" y="22" width="8" height="12" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="24" y="22" width="8" height="12" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+                <rect x="34" y="20" width="8" height="13" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+                <rect x="44" y="22" width="8" height="12" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- thumb side -->
-                <rect x="10" y="36" width="14" height="9" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="10" y="36" width="14" height="9" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- nod arrows -->
-                <path d="M40 74 L40 82" stroke="#235347" stroke-width="1.4" stroke-linecap="round"/>
-                <path d="M36 78 L40 82 L44 78" stroke="#235347" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M40 18 L40 10" stroke="#235347" stroke-width="1.4" stroke-linecap="round"/>
-                <path d="M36 14 L40 10 L44 14" stroke="#235347" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M40 74 L40 82" stroke="#235347" stroke-width="1.4" stroke-linecap="round" />
+                <path d="M36 78 L40 82 L44 78" stroke="#235347" stroke-width="1.4" stroke-linecap="round"
+                  stroke-linejoin="round" />
+                <path d="M40 18 L40 10" stroke="#235347" stroke-width="1.4" stroke-linecap="round" />
+                <path d="M36 14 L40 10 L44 14" stroke="#235347" stroke-width="1.4" stroke-linecap="round"
+                  stroke-linejoin="round" />
               </svg>
             </span>
             <span class="asl-card-name">YES</span>
@@ -220,23 +225,22 @@
           </button>
 
           <!-- NO: index + middle tap thumb twice -->
-          <button class="asl-card" type="button" data-gesture="NO"
-                  aria-expanded="false" aria-controls="aslExpandPanel">
+          <button class="asl-card" type="button" data-gesture="NO" aria-expanded="false" aria-controls="aslExpandPanel">
             <span class="asl-card-image" aria-hidden="true">
               <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="22" y="42" width="36" height="32" rx="10" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="22" y="42" width="36" height="32" rx="10" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- thumb extended -->
-                <rect x="8" y="46" width="16" height="9" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="8" y="46" width="16" height="9" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- index extended -->
-                <rect x="24" y="18" width="9" height="28" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="24" y="18" width="9" height="28" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- middle extended -->
-                <rect x="35" y="14" width="9" height="30" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="35" y="14" width="9" height="30" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- ring curled -->
-                <rect x="46" y="36" width="9" height="10" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="46" y="36" width="9" height="10" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- little curled -->
-                <rect x="56" y="38" width="8" height="9" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="56" y="38" width="8" height="9" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- tap motion -->
-                <path d="M28 46 Q20 52 28 56" stroke="#235347" stroke-width="1.2" stroke-dasharray="3 2" fill="none"/>
+                <path d="M28 46 Q20 52 28 56" stroke="#235347" stroke-width="1.2" stroke-dasharray="3 2" fill="none" />
               </svg>
             </span>
             <span class="asl-card-name">NO</span>
@@ -244,21 +248,21 @@
           </button>
 
           <!-- I LOVE YOU: thumb + index + little extended -->
-          <button class="asl-card" type="button" data-gesture="I LOVE YOU"
-                  aria-expanded="false" aria-controls="aslExpandPanel">
+          <button class="asl-card" type="button" data-gesture="I LOVE YOU" aria-expanded="false"
+            aria-controls="aslExpandPanel">
             <span class="asl-card-image" aria-hidden="true">
               <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="22" y="40" width="36" height="34" rx="10" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="22" y="40" width="36" height="34" rx="10" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- thumb -->
-                <rect x="8" y="44" width="16" height="9" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="8" y="44" width="16" height="9" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- index up -->
-                <rect x="24" y="14" width="9" height="30" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="24" y="14" width="9" height="30" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- middle curled -->
-                <rect x="35" y="34" width="9" height="10" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="35" y="34" width="9" height="10" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- ring curled -->
-                <rect x="46" y="36" width="9" height="9" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="46" y="36" width="9" height="9" rx="4.5" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- little up -->
-                <rect x="57" y="18" width="8" height="26" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="57" y="18" width="8" height="26" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
               </svg>
             </span>
             <span class="asl-card-name">I LOVE YOU</span>
@@ -266,22 +270,23 @@
           </button>
 
           <!-- HELP: flat hand on fist, lifts up -->
-          <button class="asl-card asl-card--help" type="button" data-gesture="HELP"
-                  aria-expanded="false" aria-controls="aslExpandPanel">
+          <button class="asl-card asl-card--help" type="button" data-gesture="HELP" aria-expanded="false"
+            aria-controls="aslExpandPanel">
             <span class="asl-card-image" aria-hidden="true">
               <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <!-- bottom fist -->
-                <rect x="20" y="52" width="40" height="28" rx="12" fill="#c2d9c8" stroke="#235347" stroke-width="1.5"/>
+                <rect x="20" y="52" width="40" height="28" rx="12" fill="#c2d9c8" stroke="#235347" stroke-width="1.5" />
                 <!-- top flat hand -->
-                <rect x="16" y="30" width="48" height="26" rx="10" fill="#b8dfc2" stroke="#235347" stroke-width="2"/>
+                <rect x="16" y="30" width="48" height="26" rx="10" fill="#b8dfc2" stroke="#235347" stroke-width="2" />
                 <!-- fingers on top hand -->
-                <rect x="20" y="14" width="8" height="18" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-                <rect x="30" y="10" width="8" height="22" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-                <rect x="40" y="12" width="8" height="20" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-                <rect x="50" y="16" width="8" height="16" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+                <rect x="20" y="14" width="8" height="18" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+                <rect x="30" y="10" width="8" height="22" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+                <rect x="40" y="12" width="8" height="20" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+                <rect x="50" y="16" width="8" height="16" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
                 <!-- upward arrow -->
-                <path d="M40 82 L40 90" stroke="#80564f" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M36 86 L40 90 L44 86" stroke="#80564f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M40 82 L40 90" stroke="#80564f" stroke-width="1.5" stroke-linecap="round" />
+                <path d="M36 86 L40 90 L44 86" stroke="#80564f" stroke-width="1.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
               </svg>
             </span>
             <span class="asl-card-name">HELP</span>
@@ -292,8 +297,7 @@
         </div>
 
         <!-- INLINE EXPAND PANEL — appears below the card track -->
-        <div class="asl-expand-panel" id="aslExpandPanel" hidden
-             role="region" aria-label="Gesture lesson">
+        <div class="asl-expand-panel" id="aslExpandPanel" hidden role="region" aria-label="Gesture lesson">
 
           <div class="asl-expand-header">
             <div class="asl-expand-title-row">
@@ -303,7 +307,8 @@
                 <span class="asl-expand-badge" id="aslExpandBadge"></span>
               </div>
             </div>
-            <button class="asl-expand-close" id="aslExpandClose" type="button" aria-label="Close lesson panel">✕</button>
+            <button class="asl-expand-close" id="aslExpandClose" type="button"
+              aria-label="Close lesson panel">✕</button>
           </div>
 
           <div class="asl-expand-body">
@@ -331,21 +336,19 @@
   <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true"></div>
 
   <!-- CAMERA MODAL -->
-  <div class="eh-modal" id="cameraModal" role="dialog" aria-modal="true"
-       aria-labelledby="cameraModalTitle" hidden>
+  <div class="eh-modal" id="cameraModal" role="dialog" aria-modal="true" aria-labelledby="cameraModalTitle" hidden>
     <div class="eh-modal-header">
       <div class="eh-modal-title-row">
         <div class="eh-modal-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-            <circle cx="12" cy="13" r="4"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
           </svg>
         </div>
         <h2 id="cameraModalTitle">Camera Translation</h2>
       </div>
-      <button class="eh-modal-close" id="closeCameraModal" type="button"
-              aria-label="Close camera translation">
+      <button class="eh-modal-close" id="closeCameraModal" type="button" aria-label="Close camera translation">
         ×
       </button>
     </div>
@@ -354,10 +357,10 @@
       <video id="cameraFeed" autoplay playsinline muted aria-label="Camera feed"></video>
 
       <div class="camera-placeholder" id="cameraPlaceholder">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-          <circle cx="12" cy="13" r="4"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+          <circle cx="12" cy="13" r="4" />
         </svg>
         <strong id="cameraStateTitle">Camera not started</strong>
         <span id="cameraStateText">The translation panel is ready. Start the camera when you're ready.</span>
@@ -393,23 +396,22 @@
   </div>
 
   <!-- GLOVE MODAL -->
-  <div class="eh-modal" id="gloveModal" role="dialog" aria-modal="true"
-       aria-labelledby="gloveModalTitle" hidden>
+  <div class="eh-modal" id="gloveModal" role="dialog" aria-modal="true" aria-labelledby="gloveModalTitle" hidden>
     <div class="eh-modal-header">
       <div class="eh-modal-title-row">
         <div class="eh-modal-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
-            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
-            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
-            <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+            <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+            <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+            <path
+              d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
           </svg>
         </div>
         <h2 id="gloveModalTitle">Smart Glove</h2>
       </div>
-      <button class="eh-modal-close" id="closeGloveModal" type="button"
-              aria-label="Close smart glove">
+      <button class="eh-modal-close" id="closeGloveModal" type="button" aria-label="Close smart glove">
         ×
       </button>
     </div>
@@ -419,7 +421,7 @@
         <span class="status-indicator" id="gloveStatusIndicator"></span>
         <strong id="gloveStatusText">Glove not connected</strong>
       </div>
-      <button class="btn btn-primary btn-sm" id="connectGloveBtn" type="button">Connect Demo</button>
+      <button class="btn btn-primary btn-sm" id="connectGloveBtn" type="button">Connect</button>
     </div>
 
     <div class="glove-waiting-state" id="gloveWaitingState">
@@ -433,27 +435,37 @@
 
       <div class="sensor-row">
         <span>Thumb</span>
-        <div class="sensor-bar-track"><div class="sensor-bar" id="sensorThumb"></div></div>
+        <div class="sensor-bar-track">
+          <div class="sensor-bar" id="sensorThumb"></div>
+        </div>
         <output id="sensorThumbVal">0%</output>
       </div>
       <div class="sensor-row">
         <span>Index</span>
-        <div class="sensor-bar-track"><div class="sensor-bar" id="sensorIndex"></div></div>
+        <div class="sensor-bar-track">
+          <div class="sensor-bar" id="sensorIndex"></div>
+        </div>
         <output id="sensorIndexVal">0%</output>
       </div>
       <div class="sensor-row">
         <span>Middle</span>
-        <div class="sensor-bar-track"><div class="sensor-bar" id="sensorMiddle"></div></div>
+        <div class="sensor-bar-track">
+          <div class="sensor-bar" id="sensorMiddle"></div>
+        </div>
         <output id="sensorMiddleVal">0%</output>
       </div>
       <div class="sensor-row">
         <span>Ring</span>
-        <div class="sensor-bar-track"><div class="sensor-bar" id="sensorRing"></div></div>
+        <div class="sensor-bar-track">
+          <div class="sensor-bar" id="sensorRing"></div>
+        </div>
         <output id="sensorRingVal">0%</output>
       </div>
       <div class="sensor-row">
         <span>Little</span>
-        <div class="sensor-bar-track"><div class="sensor-bar" id="sensorLittle"></div></div>
+        <div class="sensor-bar-track">
+          <div class="sensor-bar" id="sensorLittle"></div>
+        </div>
         <output id="sensorLittleVal">0%</output>
       </div>
     </div>
@@ -474,15 +486,14 @@
   </div>
 
   <!-- ASL LEARNING DETAIL MODAL -->
-  <div class="eh-modal eh-modal--wide" id="aslModal" role="dialog" aria-modal="true"
-       aria-labelledby="aslModalTitle" hidden>
+  <div class="eh-modal eh-modal--wide" id="aslModal" role="dialog" aria-modal="true" aria-labelledby="aslModalTitle"
+    hidden>
     <div class="eh-modal-header">
       <div class="eh-modal-title-row">
         <div class="eh-modal-icon">✋</div>
         <h2 id="aslModalTitle">Learn ASL</h2>
       </div>
-      <button class="eh-modal-close" id="closeAslModal" type="button"
-              aria-label="Close ASL lesson">×</button>
+      <button class="eh-modal-close" id="closeAslModal" type="button" aria-label="Close ASL lesson">×</button>
     </div>
 
     <div class="asl-lesson">
@@ -509,33 +520,34 @@
   </div>
 
   <!-- EMERGENCY MODAL -->
-  <div class="eh-modal" id="emergencyModal" role="dialog" aria-modal="true"
-       aria-labelledby="emergencyModalTitle" hidden>
+  <div class="eh-modal" id="emergencyModal" role="dialog" aria-modal="true" aria-labelledby="emergencyModalTitle"
+    hidden>
     <div class="eh-modal-header eh-modal-header--emergency">
       <div class="eh-modal-title-row">
         <div class="eh-modal-icon">!</div>
         <h2 id="emergencyModalTitle">Emergency Help</h2>
       </div>
-      <button class="eh-modal-close" id="closeEmergencyModal" type="button"
-              aria-label="Close emergency help">×</button>
+      <button class="eh-modal-close" id="closeEmergencyModal" type="button" aria-label="Close emergency help">×</button>
     </div>
 
     <div class="emergency-help-badge" id="emergencyHelpBadge">🚨 HELP — Emergency Gesture</div>
 
     <div class="emergency-gesture-visual">
       <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:80px;height:90px">
-        <rect x="20" y="52" width="40" height="28" rx="12" fill="#c2d9c8" stroke="#235347" stroke-width="1.5"/>
-        <rect x="16" y="30" width="48" height="26" rx="10" fill="#b8dfc2" stroke="#235347" stroke-width="2"/>
-        <rect x="20" y="14" width="8" height="18" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-        <rect x="30" y="10" width="8" height="22" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-        <rect x="40" y="12" width="8" height="20" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
-        <rect x="50" y="16" width="8" height="16" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5"/>
+        <rect x="20" y="52" width="40" height="28" rx="12" fill="#c2d9c8" stroke="#235347" stroke-width="1.5" />
+        <rect x="16" y="30" width="48" height="26" rx="10" fill="#b8dfc2" stroke="#235347" stroke-width="2" />
+        <rect x="20" y="14" width="8" height="18" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+        <rect x="30" y="10" width="8" height="22" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+        <rect x="40" y="12" width="8" height="20" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
+        <rect x="50" y="16" width="8" height="16" rx="4" fill="#b8dfc2" stroke="#235347" stroke-width="1.5" />
       </svg>
     </div>
 
     <div class="emergency-info-text">
-      <p><strong>Register this phone</strong> so you can receive emergency push alerts. No alert is sent when you enable notifications.</p>
-      <p class="emergency-info-secondary">When the account holder triggers HELP or <em>Send Emergency Alert</em>, registered devices receive the user&apos;s live location.</p>
+      <p><strong>Register this phone</strong> so you can receive emergency push alerts. No alert is sent when you enable
+        notifications.</p>
+      <p class="emergency-info-secondary">When the account holder triggers HELP or <em>Send Emergency Alert</em>,
+        registered devices receive the user&apos;s live location.</p>
     </div>
 
     <!-- Status of GPS and FCM alert dispatch -->
@@ -550,7 +562,8 @@
     <div class="emergency-contacts-list" id="emergencyContactsList"></div>
 
     <div class="eh-modal-footer emergency-modal-footer">
-      <button class="btn btn-primary btn-sm" id="emergencySendAlertBtn" type="button" title="Send emergency alert with your current GPS location">
+      <button class="btn btn-primary btn-sm" id="emergencySendAlertBtn" type="button"
+        title="Send emergency alert with your current GPS location">
         🚨 Send Emergency Alert
       </button>
       <button class="btn btn-secondary btn-sm" id="emergencyGetLocationBtn" type="button" hidden>
@@ -584,4 +597,5 @@
   <script src="js/emergency.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
+
 </html>

@@ -16,7 +16,7 @@
   }
 
   // ── Debounce: same gesture must appear N times in a row ──────────────────
-  const DEBOUNCE = 4;
+  const DEBOUNCE = 2;
   let _lastLabel = null, _count = 0, _spoken = null;
 
   function debounce(label) {
@@ -253,14 +253,22 @@
   });
 
   // ── Stop everything when modal closes ───────────────────────────────────
+  function stopAllGlove() {
+    stopDemo();
+    if (ws) { ws.close(); ws = null; }
+    showSensors(false);
+    setStatus('Glove disconnected', false);
+    showGesture(null);
+    _lastLabel = null; _count = 0; _spoken = null;
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  }
+
   window.EchoHandGlove = {
     initialize() {
-      stopDemo();
-      if (ws) { ws.close(); ws = null; }
-      showSensors(false);
-      setStatus('Glove not connected', false);
-      showGesture(null);
-      _lastLabel = null; _count = 0; _spoken = null;
+      stopAllGlove();
+    },
+    stopGlove() {
+      stopAllGlove();
     },
     // Optional callback — set this to receive every committed gesture label.
     // Signature: onFlex(label: string, flex: number[5])

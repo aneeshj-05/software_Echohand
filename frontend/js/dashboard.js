@@ -60,6 +60,11 @@
       window.EchoHandCamera?.stopCamera?.();
     }
 
+    // Stop glove WebSocket connection, demo, and prediction when glove modal closes
+    if (id === 'gloveModal') {
+      window.EchoHandGlove?.stopGlove?.();
+    }
+
     // Restore scroll only when no modal remains open
     const anyOpen = document.querySelector('.eh-modal.is-open');
     if (!anyOpen) {
